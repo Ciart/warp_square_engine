@@ -150,7 +150,7 @@ impl Game {
         piece.get_attack_squares(&self.board)
     }
 
-    pub fn legal_move(&self, piece_move: PieceMove) -> bool {
+    pub fn legal_move(&self, piece_move: &PieceMove) -> bool {
         let bit_source = BitBoard::from_square(&piece_move.source);
         let bit_destination = BitBoard::from_square(&piece_move.destination);
 
@@ -159,11 +159,11 @@ impl Game {
             None => return false,
         };
 
-        if piece.color != self.turn {
+        if piece.color != self.board.turn {
             return false;
         }
 
-        let board_type = match self.board.convert_board_type(piece_move.source.level) {
+        let board_type = match self.board.convert_board_type(piece_move.destination.level) {
             Some(board_type) => board_type,
             None => return false,
         };
