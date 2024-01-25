@@ -161,6 +161,10 @@ impl Game {
             None => return false,
         };
 
+        if piece.color != self.turn {
+            return false;
+        }
+
         let board_type = match self.board.convert_board_type(piece_move.source.level) {
             Some(board_type) => board_type,
             None => return false,
