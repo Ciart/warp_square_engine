@@ -7,7 +7,6 @@ use crate::{
 };
 
 pub struct Game {
-    pub turn: Color,
     pub board: Board,
     pub move_stack: Vec<(PieceMove, BoardSnapshot)>,
 }
@@ -15,7 +14,6 @@ pub struct Game {
 impl Game {
     pub fn new() -> Self {
         let mut game = Self {
-            turn: Color::White,
             board: Board::new(),
             move_stack: Vec::new(),
         };
@@ -140,7 +138,7 @@ impl Game {
     }
 
     fn pass_turn(&mut self) {
-        let _ = self.turn != self.turn;
+        let _ = self.board.turn != self.board.turn;
     }
 
     pub fn get_attack_squares(&self, square: &Square) -> Vec<Square> {

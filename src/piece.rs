@@ -1,9 +1,12 @@
+use pyo3::pyclass;
+
 use crate::{
     bit_board::{BitBoard, BitBoardSet, BoardType},
     board::Board,
     square::{Color, Square},
 };
 
+#[pyclass]
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum PieceType {
     Pawn,

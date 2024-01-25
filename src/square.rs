@@ -1,7 +1,10 @@
 use std::{mem::transmute, ops::Not};
 
+use pyo3::pyclass;
+
 use crate::bit_board::BitBoard;
 
+#[pyclass]
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Rank {
     Zero,
@@ -32,6 +35,7 @@ impl Rank {
 
 pub const NUM_RANKS: u8 = 10;
 
+#[pyclass]
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum File {
     Z,
@@ -58,6 +62,7 @@ impl File {
 
 pub const NUM_FILES: u8 = 6;
 
+#[pyclass]
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Level {
     White = 1,
@@ -109,6 +114,7 @@ impl Level {
     }
 }
 
+#[pyclass]
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Color {
     White,

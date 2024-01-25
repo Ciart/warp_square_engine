@@ -76,6 +76,20 @@ public final class Game {
     }
     private static native Piece [] do_getCapturedPieces(long self);
 
+    public final boolean isCheck() {
+        boolean ret = do_isCheck(mNativeObj);
+
+        return ret;
+    }
+    private static native boolean do_isCheck(long self);
+
+    public final boolean isCheckmate() {
+        boolean ret = do_isCheckmate(mNativeObj);
+
+        return ret;
+    }
+    private static native boolean do_isCheckmate(long self);
+
     public synchronized void delete() {
         if (mNativeObj != 0) {
             do_delete(mNativeObj);

@@ -9,7 +9,9 @@ pub struct BoardSnapshot {
     pieces: Vec<Piece>,
     captured_pieces: Vec<Piece>,
     board_set: [(BoardType, Level); 7],
-    occupied: ColorMask,
+    occupied_void: BitBoardSet,
+    occupied_piece: ColorMask,
+    turn: Color,
 }
 
 impl BoardSnapshot {
@@ -18,7 +20,9 @@ impl BoardSnapshot {
             pieces: board.pieces.clone(),
             captured_pieces: board.captured_pieces.clone(),
             board_set: board.board_set.clone(),
-            occupied: board.occupied_piece.clone(),
+            occupied_void: board.occupied_void.clone(),
+            occupied_piece: board.occupied_piece.clone(),
+            turn: board.turn,
         }
     }
 
@@ -26,7 +30,9 @@ impl BoardSnapshot {
         board.pieces = self.pieces.clone();
         board.captured_pieces = self.captured_pieces.clone();
         board.board_set = self.board_set.clone();
-        board.occupied_piece = self.occupied.clone();
+        board.occupied_void = self.occupied_void.clone();
+        board.occupied_piece = self.occupied_piece.clone();
+        board.turn = self.turn;
     }
 }
 
@@ -37,6 +43,7 @@ pub struct Board {
     pub board_set: [(BoardType, Level); 7],
     pub occupied_void: BitBoardSet,
     pub occupied_piece: ColorMask,
+    pub turn: Color,
 }
 
 impl Board {
@@ -55,6 +62,7 @@ impl Board {
             ],
             occupied_void: BitBoardSet::new(),
             occupied_piece: ColorMask::new(),
+            turn: Color::White,
         }
     }
 
@@ -104,50 +112,6 @@ impl Board {
                 } else {
                     result.push((board_type, square, true));
                 }
-            }
-        }
-
-        result
-    }
-
-    pub fn get_empty_board_with_color(
-        &self,
-        square: BitBoard,
-        color: Color,
-    ) -> Vec<(BoardType, bool)> {
-        let mut result = Vec::new();
-
-        let square = square.remove_level();
-
-        for board_type in BoardType::iter() {
-            let level = self.convert_level(board_type);
-
-            let is_void = !match level {
-                Level::White => BitBoard::WHITE_SET.contains(square),
-                Level::Neutral => BitBoard::NEUTRAL_SET.contains(square),
-                Level::Black => BitBoard::BLACK_SET.contains(square),
-                Level::QL1 => BitBoard::QL1_SET.contains(square),
-                Level::QL2 => BitBoard::QL2_SET.contains(square),
-                Level::QL3 => BitBoard::QL3_SET.contains(square),
-                Level::QL4 => BitBoard::QL4_SET.contains(square),
-                Level::QL5 => BitBoard::QL5_SET.contains(square),
-                Level::QL6 => BitBoard::QL6_SET.contains(square),
-                Level::KL1 => BitBoard::KL1_SET.contains(square),
-                Level::KL2 => BitBoard::KL2_SET.contains(square),
-                Level::KL3 => BitBoard::KL3_SET.contains(square),
-                Level::KL4 => BitBoard::KL4_SET.contains(square),
-                Level::KL5 => BitBoard::KL5_SET.contains(square),
-                Level::KL6 => BitBoard::KL6_SET.contains(square),
-            };
-
-            if is_void {
-                continue;
-            }
-
-            if self.occupied_piece[color][board_type].contains(square) {
-                result.push((board_type, false));
-            } else {
-                result.push((board_type, true));
             }
         }
 
@@ -243,8 +207,8 @@ impl Board {
             .find(|piece| piece.piece_type == PieceType::King && piece.color == color)
     }
 
-    pub fn is_check(&self, current_turn: Color) -> bool {
-        let king = match self.find_king(current_turn) {
+    pub fn is_check(&self) -> bool {
+        let king = match self.find_king(self.turn) {
             Some(piece) => piece,
             None => return false,
         };
@@ -261,15 +225,15 @@ impl Board {
         false
     }
 
-    pub fn is_checkmate(&self, current_turn: Color) -> bool {
-        if !self.is_check(current_turn) {
+    pub fn is_checkmate(&self) -> bool {
+        if !self.is_check() {
             return false;
         }
 
         let mut pieces = self.pieces.clone();
 
         for piece in pieces.iter_mut() {
-            if piece.color != current_turn {
+            if piece.color != self.turn {
                 continue;
             }
 
@@ -281,7 +245,7 @@ impl Board {
                 board.move_piece(piece.position, attack).unwrap();
                 board.update();
 
-                if !board.is_check(current_turn) {
+                if !board.is_check() {
                     return false;
                 }
             }

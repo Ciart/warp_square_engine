@@ -178,6 +178,12 @@ foreign_class!(class Game {
     fn Game::getCapturedPieces(&self) -> Vec<Piece> {
         this.board.captured_pieces.clone()
     }
+    fn Game::isCheck(&self) -> bool {
+        this.board.is_check()
+    }
+    fn Game::isCheckmate(&self) -> bool {
+        this.board.is_checkmate()
+    }
     foreign_code r#"
     static {
         try {
