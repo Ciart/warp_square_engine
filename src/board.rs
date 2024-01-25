@@ -30,6 +30,7 @@ impl BoardSnapshot {
     }
 }
 
+#[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct Board {
     pub pieces: Vec<Piece>,
     pub captured_pieces: Vec<Piece>,
@@ -75,7 +76,11 @@ impl Board {
 
     /// 같은 Rank, File의 모든 Square 상태를 반환합니다.
     /// TODO: 함수 이름 변경, 반환값 정리
-    pub fn get_empty_board(&self, squares: BitBoard, ignore_color: Option<Color>) -> Vec<(BoardType, BitBoard, bool)> {
+    pub fn get_empty_board(
+        &self,
+        squares: BitBoard,
+        ignore_color: Option<Color>,
+    ) -> Vec<(BoardType, BitBoard, bool)> {
         let mut result = Vec::new();
 
         let squares = squares.remove_level();
@@ -230,5 +235,58 @@ impl Board {
         }
 
         self.pieces = pieces;
+    }
+
+    pub fn find_king(&self, color: Color) -> Option<&Piece> {
+        self.pieces
+            .iter()
+            .find(|piece| piece.piece_type == PieceType::King && piece.color == color)
+    }
+
+    pub fn is_check(&self, current_turn: Color) -> bool {
+        let king = match self.find_king(current_turn) {
+            Some(piece) => piece,
+            None => return false,
+        };
+
+        let king_board = self.convert_board_type(king.position.get_level()).unwrap();
+        let king_position = king.position.remove_level();
+
+        for piece in &self.pieces {
+            if piece.attacks[king_board].contains(king_position) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    pub fn is_checkmate(&self, current_turn: Color) -> bool {
+        if !self.is_check(current_turn) {
+            return false;
+        }
+
+        let mut pieces = self.pieces.clone();
+
+        for piece in pieces.iter_mut() {
+            if piece.color != current_turn {
+                continue;
+            }
+
+            let piece_board = self.convert_board_type(piece.position.get_level()).unwrap();
+
+            for attack in piece.attacks[piece_board].iter() {
+                let mut board = (*self).clone();
+
+                board.move_piece(piece.position, attack).unwrap();
+                board.update();
+
+                if !board.is_check(current_turn) {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 }
