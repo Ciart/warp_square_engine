@@ -91,7 +91,7 @@ impl Piece {
             .board_set
             .iter()
             .fold(BitBoard::EMPTY, |acc, (_, level)| {
-                acc | level.get_bit_board()
+                acc | level.get_area()
             });
 
         occupied & board_area

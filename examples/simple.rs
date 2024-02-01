@@ -1,6 +1,6 @@
 extern crate warp_square_engine;
 
-use warp_square_engine::{game::Game, piece_move::PieceMove, square::{File, Level, Rank, Square}};
+use warp_square_engine::{chess_move::{BoardMove, PieceMove}, game::Game, square::{File, Level, Rank, Square}};
 
 fn main() {
     let mut game = Game::new();
@@ -13,6 +13,8 @@ fn main() {
         let _ = game.push_move(piece_move);
         println!("Success")
     }
+
+    game.push_move(BoardMove::new(Level::QL1, Level::Neutral));
 
     game.print();
 }

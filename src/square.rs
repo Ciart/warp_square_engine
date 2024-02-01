@@ -93,7 +93,7 @@ impl Level {
     }
 
     /// BitBoard 존재 가능 영역
-    pub fn get_bit_board(&self) -> BitBoard {
+    pub fn get_area(&self) -> BitBoard {
         match self {
             Level::White => BitBoard::WHITE_SET,
             Level::Neutral => BitBoard::NEUTRAL_SET,

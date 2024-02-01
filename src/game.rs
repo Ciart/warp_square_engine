@@ -1,14 +1,14 @@
 use crate::{
     bit_board::BitBoard,
     board::{Board, BoardSnapshot},
+    chess_move::ChessMove,
     piece::PieceType,
-    piece_move::PieceMove,
     square::{Color, Rank, Square},
 };
 
 pub struct Game {
     pub board: Board,
-    pub move_stack: Vec<(PieceMove, BoardSnapshot)>,
+    pub move_stack: Vec<(Box<dyn ChessMove>, BoardSnapshot)>,
 }
 
 impl Game {
@@ -150,52 +150,27 @@ impl Game {
         piece.get_attack_squares(&self.board)
     }
 
-    pub fn legal_move(&self, piece_move: &PieceMove) -> bool {
-        let bit_source = BitBoard::from_square(&piece_move.source);
-        let bit_destination = BitBoard::from_square(&piece_move.destination);
-
-        let piece = match self.board.get_piece(bit_source) {
-            Some(piece) => piece,
-            None => return false,
-        };
-
-        if piece.color != self.board.turn {
-            return false;
-        }
-
-        let board_type = match self.board.convert_board_type(piece_move.destination.level) {
-            Some(board_type) => board_type,
-            None => return false,
-        };
-
-        if piece.attacks[board_type].contains(bit_destination.remove_level()) {
-            return true;
-        }
-
-        false
+    pub fn legal_move(&self, chess_move: &impl ChessMove) -> bool {
+        chess_move.legal(&self.board)
     }
 
-    pub fn push_move(&mut self, piece_move: PieceMove) -> Result<(), &'static str> {
+    pub fn push_move(&mut self, chess_move: impl ChessMove + 'static) -> Result<(), &'static str> {
         let snapshot = BoardSnapshot::new(&self.board);
 
-        let source = BitBoard::from_square(&piece_move.source);
-        let destination = BitBoard::from_square(&piece_move.destination);
+        let result = chess_move.run(&mut self.board);
 
-        let result = self.board.move_piece(source, destination);
-        self.board.update();
-
-        self.move_stack.push((piece_move, snapshot));
+        self.move_stack.push((Box::new(chess_move), snapshot));
         self.pass_turn();
 
         result
     }
 
-    pub fn pop_move(&mut self) -> Result<PieceMove, &'static str> {
+    pub fn pop_move(&mut self) -> Result<Box<dyn ChessMove>, &'static str> {
         self.pass_turn();
         match self.move_stack.pop() {
-            Some((piece_move, snapshot)) => {
+            Some((chess_move, snapshot)) => {
                 snapshot.restore(&mut self.board);
-                Ok(piece_move)
+                Ok(chess_move)
             }
             None => Err("Nothing to pop"),
         }

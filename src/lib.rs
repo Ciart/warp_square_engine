@@ -3,5 +3,5 @@ pub mod board;
 pub mod color_mask;
 pub mod game;
 pub mod piece;
-pub mod piece_move;
+pub mod chess_move;
 pub mod square;

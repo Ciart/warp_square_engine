@@ -1,8 +1,10 @@
+use bitflags::Flags;
+
 use crate::{
     bit_board::{BitBoard, BitBoardSet, BoardType},
     color_mask::ColorMask,
     piece::{Piece, PieceType},
-    square::{Color, Level},
+    square::{Color, Level, Square},
 };
 
 pub struct BoardSnapshot {
@@ -101,7 +103,7 @@ impl Board {
             let level = self.convert_level(board_type);
 
             for square in squares.iter() {
-                let is_void = !level.get_bit_board().contains(square);
+                let is_void = !level.get_area().contains(square);
 
                 if is_void {
                     continue;
@@ -164,11 +166,44 @@ impl Board {
         Ok(())
     }
 
+    pub fn move_board(&mut self, source: Level, destination: Level) -> Result<(), &'static str> {
+        let board = match self
+            .board_set
+            .iter_mut()
+            .find(|(_, level)| *level == source)
+        {
+            Some(board) => board,
+            None => return Err("There is no board at the source"),
+        };
+
+        board.1 = destination;
+
+        for piece in self.pieces.iter_mut() {
+            if piece.position.get_level() == source {
+                let position = piece.position.remove_level();
+
+                let source_area = source.get_area();
+                let destination_area = destination.get_area();
+
+                let shift = (destination_area.bits().trailing_zeros() as i32) - (source_area.bits().trailing_zeros() as i32);
+
+                let new_position = match shift.is_positive() {
+                    true => BitBoard::from_bits_retain(position.bits() << shift),
+                    false => BitBoard::from_bits_retain(position.bits() >> shift.abs()),
+                };
+
+                piece.position = new_position | destination.into_bit_board();
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn validate_square(&self, square: BitBoard) -> bool {
         let level = BitBoard::into_square(&square).level;
         let square = square.remove_level();
 
-        level.get_bit_board().contains(square)
+        level.get_area().contains(square)
     }
 
     pub fn update_occupied(&mut self) {
@@ -176,7 +211,7 @@ impl Board {
         self.occupied_piece = ColorMask::new();
 
         for board_type in BoardType::iter() {
-            self.occupied_void[board_type] = !self.convert_level(board_type).get_bit_board();
+            self.occupied_void[board_type] = !self.convert_level(board_type).get_area();
         }
 
         for piece in self.pieces.iter() {
