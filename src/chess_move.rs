@@ -27,11 +27,8 @@ impl ChessMove for PieceMove {
     fn run(&self, board: &mut Board) -> Result<(), &'static str> {
         let source = BitBoard::from_square(&self.source);
         let destination = BitBoard::from_square(&self.destination);
-
-        let result = board.move_piece(source, destination);
-        board.update();
-
-        result
+        
+        board.move_piece(source, destination)
     }
 
     fn legal(&self, board: &Board) -> bool {

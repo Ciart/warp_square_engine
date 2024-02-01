@@ -14,7 +14,7 @@ fn main() {
         println!("Success")
     }
 
-    game.push_move(BoardMove::new(Level::QL1, Level::Neutral));
+    game.push_move(BoardMove::new(Level::QL1, Level::QL2));
 
     game.print();
 }

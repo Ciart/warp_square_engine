@@ -158,6 +158,7 @@ impl Game {
         let snapshot = BoardSnapshot::new(&self.board);
 
         let result = chess_move.run(&mut self.board);
+        self.board.update();
 
         self.move_stack.push((Box::new(chess_move), snapshot));
         self.pass_turn();
