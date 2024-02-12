@@ -1,8 +1,10 @@
 use pyo3::pyclass;
 
 use crate::{
-    bit_board::{BitBoard, BitBoardSet, BoardType},
+    bit_board::BitBoard,
+    bit_board_set::BitBoardSet,
     board::Board,
+    board_type::BoardType,
     square::{Color, Square},
 };
 
@@ -90,9 +92,7 @@ impl Piece {
         let board_area = board
             .board_set
             .iter()
-            .fold(BitBoard::EMPTY, |acc, (_, level)| {
-                acc | level.get_area()
-            });
+            .fold(BitBoard::EMPTY, |acc, (_, level)| acc | level.get_area());
 
         occupied & board_area
     }
@@ -133,7 +133,8 @@ impl Piece {
 
         // 공격 행마
         {
-            let destination = position.forward_left(self.color) | position.forward_right(self.color);
+            let destination =
+                position.forward_left(self.color) | position.forward_right(self.color);
 
             let empty_boards = board.get_empty_board(destination, Some(self.color));
 
@@ -142,8 +143,9 @@ impl Piece {
                     attacks[*board_type] |= *square;
                 }
             }
-            
+
             // TODO: 앙파상 추가
+            if let Some(moved_pawn_two_square) = board.moved_pawn_two_square {}
         }
 
         attacks

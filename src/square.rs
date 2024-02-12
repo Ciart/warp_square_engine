@@ -112,6 +112,17 @@ impl Level {
             Level::KL6 => BitBoard::KL6_SET,
         }
     }
+
+    pub fn is_main(&self) -> bool {
+        match self {
+            Level::White | Level::Neutral | Level::Black => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_attack(&self) -> bool {
+        !self.is_main()
+    }
 }
 
 #[pyclass]

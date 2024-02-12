@@ -1,56 +1,61 @@
-use bitflags::Flags;
-
 use crate::{
-    bit_board::{BitBoard, BitBoardSet, BoardType},
+    bit_board::BitBoard,
+    bit_board_set::BitBoardSet,
+    board_type::BoardType,
     color_mask::ColorMask,
     piece::{Piece, PieceType},
-    square::{Color, Level, Square},
+    square::{Color, Level},
 };
 
 pub struct BoardSnapshot {
+    turn: Color,
     pieces: Vec<Piece>,
     captured_pieces: Vec<Piece>,
     board_set: [(BoardType, Level); 7],
     occupied_void: BitBoardSet,
     occupied_piece: ColorMask,
-    turn: Color,
+    moved_pawn_two_square: Option<BitBoard>,
 }
 
 impl BoardSnapshot {
     pub fn new(board: &Board) -> Self {
         Self {
+            turn: board.turn,
             pieces: board.pieces.clone(),
             captured_pieces: board.captured_pieces.clone(),
             board_set: board.board_set.clone(),
             occupied_void: board.occupied_void.clone(),
             occupied_piece: board.occupied_piece.clone(),
-            turn: board.turn,
+            moved_pawn_two_square: board.moved_pawn_two_square.clone(),
         }
     }
 
     pub fn restore(&self, board: &mut Board) {
+        board.turn = self.turn;
         board.pieces = self.pieces.clone();
         board.captured_pieces = self.captured_pieces.clone();
         board.board_set = self.board_set.clone();
         board.occupied_void = self.occupied_void.clone();
         board.occupied_piece = self.occupied_piece.clone();
-        board.turn = self.turn;
+        board.moved_pawn_two_square = self.moved_pawn_two_square.clone();
     }
 }
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct Board {
+    pub turn: Color,
     pub pieces: Vec<Piece>,
     pub captured_pieces: Vec<Piece>,
     pub board_set: [(BoardType, Level); 7],
     pub occupied_void: BitBoardSet,
     pub occupied_piece: ColorMask,
-    pub turn: Color,
+    pub moved_pawn_two_square: Option<BitBoard>,
 }
 
 impl Board {
     pub fn new() -> Self {
         Self {
+            turn: Color::White,
             pieces: Vec::new(),
             captured_pieces: Vec::new(),
             board_set: [
@@ -64,7 +69,7 @@ impl Board {
             ],
             occupied_void: BitBoardSet::new(),
             occupied_piece: ColorMask::new(),
-            turn: Color::White,
+            moved_pawn_two_square: None,
         }
     }
 
@@ -143,10 +148,12 @@ impl Board {
         old_piece
     }
 
+    /// * `promotion` - 값이 있으면 이동 후 기물의 piece_type을 변경합니다.
     pub fn move_piece(
         &mut self,
         source: BitBoard,
         destination: BitBoard,
+        promotion: Option<PieceType>,
     ) -> Result<(), &'static str> {
         let mut piece = match self.remove_piece(source) {
             Some(piece) => piece,
@@ -160,6 +167,10 @@ impl Board {
 
         piece.position = destination;
         piece.is_moved = true;
+
+        if let Some(promotion) = promotion {
+            piece.piece_type = promotion;
+        }
 
         self.pieces.push(piece);
 
@@ -185,7 +196,8 @@ impl Board {
                 let source_area = source.get_area();
                 let destination_area = destination.get_area();
 
-                let shift = (destination_area.bits().trailing_zeros() as i32) - (source_area.bits().trailing_zeros() as i32);
+                let shift = (destination_area.bits().trailing_zeros() as i32)
+                    - (source_area.bits().trailing_zeros() as i32);
 
                 let new_position = match shift.is_positive() {
                     true => BitBoard::from_bits_retain(position.bits() << shift),
@@ -277,7 +289,7 @@ impl Board {
             for attack in piece.attacks[piece_board].iter() {
                 let mut board = (*self).clone();
 
-                board.move_piece(piece.position, attack).unwrap();
+                board.move_piece(piece.position, attack, None).unwrap();
                 board.update();
 
                 if !board.is_check() {
