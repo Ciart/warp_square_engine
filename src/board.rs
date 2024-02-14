@@ -148,7 +148,6 @@ impl Board {
         old_piece
     }
 
-    /// * `promotion` - 값이 있으면 이동 후 기물의 piece_type을 변경합니다.
     pub fn move_piece(
         &mut self,
         source: BitBoard,
@@ -168,8 +167,8 @@ impl Board {
         piece.position = destination;
         piece.is_moved = true;
 
-        if let Some(promotion) = promotion {
-            piece.piece_type = promotion;
+        if piece.is_promotion_position() {
+            piece.piece_type = promotion.unwrap_or(PieceType::Queen);
         }
 
         self.pieces.push(piece);
@@ -177,7 +176,12 @@ impl Board {
         Ok(())
     }
 
-    pub fn move_board(&mut self, source: Level, destination: Level) -> Result<(), &'static str> {
+    pub fn move_board(
+        &mut self,
+        source: Level,
+        destination: Level,
+        promotion: Option<PieceType>,
+    ) -> Result<(), &'static str> {
         let board = match self
             .board_set
             .iter_mut()
@@ -205,6 +209,10 @@ impl Board {
                 };
 
                 piece.position = new_position | destination.into_bit_board();
+
+                if piece.is_promotion_position() {
+                    piece.piece_type = promotion.unwrap_or(PieceType::Queen);
+                }
             }
         }
 

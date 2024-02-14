@@ -25,7 +25,7 @@ fn main() {
         println!("Success")
     }
 
-    game.push_move(BoardMove::new(Level::QL1, Level::QL2));
+    let _ = game.push_move(BoardMove::new(Level::QL1, Level::QL2, None));
 
     println!("{}", BitBoard::A2.rank_distance(&BitBoard::B3));
 

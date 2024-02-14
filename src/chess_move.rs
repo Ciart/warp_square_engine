@@ -67,16 +67,6 @@ impl ChessMove for PieceMove {
         let source = BitBoard::from_square(&self.source);
         let destination = BitBoard::from_square(&self.destination);
 
-        // 프로모션 상황에서 None이면 퀸으로 변경
-        let promotion = if self.is_promotion(board) {
-            match self.promotion {
-                Some(promotion) => Some(promotion),
-                None => Some(PieceType::Queen),
-            }
-        } else {
-            None
-        };
-
         // 앙파상 확인을 위해 변수 업데이트
         if let Some(piece) = board.get_piece(source) {
             if piece.piece_type == PieceType::Pawn && source.rank_distance(&destination) == 2 {
@@ -88,7 +78,7 @@ impl ChessMove for PieceMove {
             board.moved_pawn_two_square = None;
         }
 
-        board.move_piece(source, destination, promotion)
+        board.move_piece(source, destination, self.promotion)
     }
 
     fn legal(&self, board: &Board) -> bool {
@@ -121,13 +111,15 @@ impl ChessMove for PieceMove {
 pub struct BoardMove {
     pub source: Level,
     pub destination: Level,
+    pub promotion: Option<PieceType>,
 }
 
 impl BoardMove {
-    pub fn new(source: Level, destination: Level) -> Self {
+    pub fn new(source: Level, destination: Level, promotion: Option<PieceType>) -> Self {
         Self {
             source,
             destination,
+            promotion,
         }
     }
 }
@@ -135,7 +127,7 @@ impl BoardMove {
 impl ChessMove for BoardMove {
     fn run(&self, board: &mut Board) -> Result<(), &'static str> {
         board.moved_pawn_two_square = None;
-        board.move_board(self.source, self.destination)
+        board.move_board(self.source, self.destination, self.promotion)
     }
 
     fn legal(&self, board: &Board) -> bool {
@@ -171,8 +163,6 @@ impl ChessMove for BoardMove {
             (Level::KL6, vec![Level::QL6, Level::KL5]),
         ]);
 
-        // TODO: 한 개만 올라가 있는 
-
         // 이동할 수 있는 레벨인지 확인
         if !level_map
             .get(&self.source)
@@ -182,6 +172,17 @@ impl ChessMove for BoardMove {
             return false;
         }
 
-        true
+        // 기물 1개 이하 존재해야만 움직일 수 있으며 기물의 색깔과 턴이 일치해야 한다.
+        // 빈 어택보드는 누구나 움직일 수 있다.
+        let mut source_pieces = board
+            .pieces
+            .iter()
+            .filter(|piece| piece.position.get_level() == self.source);
+
+        match source_pieces.clone().count() {
+            0 => true,
+            1 => source_pieces.next().unwrap().color == board.turn,
+            _ => false,
+        }
     }
 }

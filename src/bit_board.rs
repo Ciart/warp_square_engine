@@ -1,4 +1,4 @@
-use bitflags::{bitflags, Flags};
+use bitflags::bitflags;
 
 use crate::square::{Color, File, Level, Rank, Square, NUM_RANKS};
 

@@ -5,7 +5,7 @@ use crate::{
     bit_board_set::BitBoardSet,
     board::Board,
     board_type::BoardType,
-    square::{Color, Square},
+    square::{Color, Rank, Square},
 };
 
 #[pyclass]
@@ -95,6 +95,31 @@ impl Piece {
             .fold(BitBoard::EMPTY, |acc, (_, level)| acc | level.get_area());
 
         occupied & board_area
+    }
+
+    pub fn is_promotion_position(&self) -> bool {
+        if self.piece_type != PieceType::Pawn {
+            return false;
+        }
+
+        let end_rank = match self.color {
+            Color::White => {
+                if self.position.get_level().is_main() {
+                    Rank::Eight
+                } else {
+                    Rank::Nine
+                }
+            }
+            Color::Black => {
+                if self.position.get_level().is_main() {
+                    Rank::One
+                } else {
+                    Rank::Zero
+                }
+            }
+        };
+
+        self.position.get_rank() == end_rank
     }
 
     pub fn update_attacks(&mut self, board: &Board) {
