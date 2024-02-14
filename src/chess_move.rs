@@ -8,9 +8,21 @@ use crate::{
 };
 
 pub trait ChessMove {
+    /// 이동을 실행해 보드에 적용합니다.
+    /// 프로모션을 제외한 이동 특수 로직는 이곳에서 구현합니다.
+    /// Board::move_piece와 Board::move_board는 최대한 단순하게 유지합니다.
+    /// * `board` - 이동을 적용할 보드입니다.
     fn run(&self, board: &mut Board) -> Result<(), &'static str>;
 
     fn legal(&self, board: &Board) -> bool;
+
+    fn is_self_check(&self, board: &Board) -> bool {
+        let mut board = board.clone();
+
+        let _ = self.run(&mut board);
+
+        board.is_check()
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
@@ -30,7 +42,6 @@ impl PieceMove {
         }
     }
 
-    // TODO: 캡쳐 시에도 프로모션이 가능한지 조사해야 함F
     pub fn is_promotion(&self, board: &Board) -> bool {
         let piece = match board.get_piece(BitBoard::from_square(&self.source)) {
             Some(piece) => piece,
@@ -60,6 +71,33 @@ impl PieceMove {
 
         self.destination.rank == end_rank
     }
+
+    pub fn is_en_passant(&self, board: &Board) -> bool {
+        // 파일이 같다면 앙파상일 수 없음
+        if self.source.file == self.destination.file {
+            return false;
+        }
+
+        let source = BitBoard::from_square(&self.source);
+        let destination = BitBoard::from_square(&self.destination);
+
+        let piece = match board.get_piece(source) {
+            Some(piece) => piece,
+            None => return false,
+        };
+
+        if piece.piece_type != PieceType::Pawn {
+            return false;
+        }
+
+        if let Some(en_passant) = &board.en_passant {
+            if en_passant.old_square == destination {
+                return true;
+            }
+        }
+
+        false
+    }
 }
 
 impl ChessMove for PieceMove {
@@ -67,15 +105,19 @@ impl ChessMove for PieceMove {
         let source = BitBoard::from_square(&self.source);
         let destination = BitBoard::from_square(&self.destination);
 
+        if self.is_en_passant(board) {
+            board.remove_piece(board.en_passant.as_ref().unwrap().new_square);
+        }
+
         // 앙파상 확인을 위해 변수 업데이트
         if let Some(piece) = board.get_piece(source) {
             if piece.piece_type == PieceType::Pawn && source.rank_distance(&destination) == 2 {
-                board.moved_pawn_two_square = Some(destination);
+                board.set_en_passant(source, destination)
             } else {
-                board.moved_pawn_two_square = None;
+                board.remove_en_passant();
             }
         } else {
-            board.moved_pawn_two_square = None;
+            board.remove_en_passant();
         }
 
         board.move_piece(source, destination, self.promotion)
@@ -103,6 +145,10 @@ impl ChessMove for PieceMove {
             return false;
         }
 
+        if self.is_self_check(board) {
+            return false;
+        }
+
         true
     }
 }
@@ -111,6 +157,7 @@ impl ChessMove for PieceMove {
 pub struct BoardMove {
     pub source: Level,
     pub destination: Level,
+    // TODO: 여러 폰이 동시에 프로모션하는 경우에는 어떻게 해야 할까?
     pub promotion: Option<PieceType>,
 }
 
@@ -126,7 +173,7 @@ impl BoardMove {
 
 impl ChessMove for BoardMove {
     fn run(&self, board: &mut Board) -> Result<(), &'static str> {
-        board.moved_pawn_two_square = None;
+        board.remove_en_passant();
         board.move_board(self.source, self.destination, self.promotion)
     }
 
@@ -147,20 +194,19 @@ impl ChessMove for BoardMove {
         }
 
         // TODO: 함수로 분리해야 함
-        // TODO: 이웃한게 맞는지 다시 검증해야 함
         let level_map: HashMap<Level, Vec<Level>> = HashMap::from([
-            (Level::QL1, vec![Level::QL2, Level::KL1]),
-            (Level::QL2, vec![Level::QL1, Level::QL3, Level::KL2]),
-            (Level::QL3, vec![Level::QL2, Level::QL4, Level::KL3]),
-            (Level::QL4, vec![Level::QL3, Level::QL5, Level::KL4]),
-            (Level::QL5, vec![Level::QL4, Level::QL6, Level::KL5]),
-            (Level::QL6, vec![Level::QL5, Level::KL6]),
-            (Level::KL1, vec![Level::QL1, Level::KL2]),
-            (Level::KL2, vec![Level::QL2, Level::KL1, Level::KL3]),
-            (Level::KL3, vec![Level::QL3, Level::KL2, Level::KL4]),
-            (Level::KL4, vec![Level::QL4, Level::KL3, Level::KL5]),
-            (Level::KL5, vec![Level::QL5, Level::KL4, Level::KL6]),
-            (Level::KL6, vec![Level::QL6, Level::KL5]),
+            (Level::QL1, vec![Level::QL2, Level::QL3, Level::KL1]),
+            (Level::QL2, vec![Level::QL1, Level::QL3, Level::QL4, Level::KL2]),
+            (Level::QL3, vec![Level::QL1, Level::QL2, Level::QL4, Level::QL5, Level::KL3]),
+            (Level::QL4, vec![Level::QL2, Level::QL3, Level::QL5, Level::QL6, Level::KL4]),
+            (Level::QL5, vec![Level::QL3, Level::QL4, Level::QL6, Level::KL5]),
+            (Level::QL6, vec![Level::QL4, Level::QL5, Level::KL6]),
+            (Level::KL1, vec![Level::KL2, Level::KL3, Level::QL1]),
+            (Level::KL2, vec![Level::KL1, Level::KL3, Level::KL4, Level::QL2]),
+            (Level::KL3, vec![Level::KL1, Level::KL2, Level::KL4, Level::KL5, Level::QL3]),
+            (Level::KL4, vec![Level::KL2, Level::KL3, Level::KL5, Level::KL6, Level::QL4]),
+            (Level::KL5, vec![Level::KL3, Level::KL4, Level::KL6, Level::QL5]),
+            (Level::KL6, vec![Level::KL4, Level::KL5, Level::QL6]),
         ]);
 
         // 이동할 수 있는 레벨인지 확인
@@ -179,10 +225,16 @@ impl ChessMove for BoardMove {
             .iter()
             .filter(|piece| piece.position.get_level() == self.source);
 
-        match source_pieces.clone().count() {
+        let is_can_move = match source_pieces.clone().count() {
             0 => true,
             1 => source_pieces.next().unwrap().color == board.turn,
             _ => false,
+        };
+
+        if self.is_self_check(board) {
+            return false;
         }
+
+        is_can_move
     }
 }

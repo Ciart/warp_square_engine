@@ -147,7 +147,7 @@ impl Piece {
                 destination |= destination.forward(self.color);
             }
 
-            let empty_boards = board.get_empty_board(destination, None);
+            let empty_boards = board.get_empty_squares(destination, None);
 
             for (board_type, square, is_empty) in &empty_boards {
                 if *is_empty {
@@ -161,16 +161,25 @@ impl Piece {
             let destination =
                 position.forward_left(self.color) | position.forward_right(self.color);
 
-            let empty_boards = board.get_empty_board(destination, Some(self.color));
+            let empty_boards = board.get_empty_squares(destination, Some(self.color));
 
             for (board_type, square, is_empty) in &empty_boards {
-                if !*is_empty {
+                if *is_empty {
+                    if let Some(en_passant) = &board.en_passant {
+                        // 앙파상 보드 타입 확인
+                        if *board_type != board.convert_board_type(en_passant.old_square.get_level()).unwrap() {
+                            break;
+                        }
+
+                        if *square == en_passant.old_square.remove_level() {
+                            attacks[*board_type] |= *square;
+                        }
+                    }
+                }
+                else {
                     attacks[*board_type] |= *square;
                 }
             }
-
-            // TODO: 앙파상 추가
-            if let Some(moved_pawn_two_square) = board.moved_pawn_two_square {}
         }
 
         attacks
@@ -203,7 +212,7 @@ impl Piece {
         destination |=
             BitBoard::from_bits_retain(position.bits() << 21 & (!BitBoard::ZERO_RANKS).bits());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -226,7 +235,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.up_left());
         destination |= position.ray(occupied, |current| current.up_right());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -249,7 +258,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.left());
         destination |= position.ray(occupied, |current| current.right());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -276,7 +285,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.up_left());
         destination |= position.ray(occupied, |current| current.up_right());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -302,7 +311,7 @@ impl Piece {
         destination |= position.up_left();
         destination |= position.down_right();
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {

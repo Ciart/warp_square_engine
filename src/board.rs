@@ -7,6 +7,16 @@ use crate::{
     square::{Color, Level},
 };
 
+/// 앙파상 처리를 위한 구조체
+#[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
+pub struct EnPassant {
+    // 앙파상으로 잡히는 이전 턴 폰의 위치
+    pub old_square: BitBoard,
+
+    // 앙파상으로 잡히는 현재 폰의 위치
+    pub new_square: BitBoard,
+}
+
 pub struct BoardSnapshot {
     turn: Color,
     pieces: Vec<Piece>,
@@ -14,7 +24,7 @@ pub struct BoardSnapshot {
     board_set: [(BoardType, Level); 7],
     occupied_void: BitBoardSet,
     occupied_piece: ColorMask,
-    moved_pawn_two_square: Option<BitBoard>,
+    en_passant: Option<EnPassant>,
 }
 
 impl BoardSnapshot {
@@ -26,7 +36,7 @@ impl BoardSnapshot {
             board_set: board.board_set.clone(),
             occupied_void: board.occupied_void.clone(),
             occupied_piece: board.occupied_piece.clone(),
-            moved_pawn_two_square: board.moved_pawn_two_square.clone(),
+            en_passant: board.en_passant.clone(),
         }
     }
 
@@ -37,7 +47,7 @@ impl BoardSnapshot {
         board.board_set = self.board_set.clone();
         board.occupied_void = self.occupied_void.clone();
         board.occupied_piece = self.occupied_piece.clone();
-        board.moved_pawn_two_square = self.moved_pawn_two_square.clone();
+        board.en_passant = self.en_passant.clone();
     }
 }
 
@@ -49,7 +59,7 @@ pub struct Board {
     pub board_set: [(BoardType, Level); 7],
     pub occupied_void: BitBoardSet,
     pub occupied_piece: ColorMask,
-    pub moved_pawn_two_square: Option<BitBoard>,
+    pub en_passant: Option<EnPassant>,
 }
 
 impl Board {
@@ -69,7 +79,7 @@ impl Board {
             ],
             occupied_void: BitBoardSet::new(),
             occupied_piece: ColorMask::new(),
-            moved_pawn_two_square: None,
+            en_passant: None,
         }
     }
 
@@ -91,7 +101,7 @@ impl Board {
 
     /// 같은 Rank, File의 모든 Square 상태를 반환합니다.
     /// TODO: 함수 이름 변경, 반환값 정리
-    pub fn get_empty_board(
+    pub fn get_empty_squares(
         &self,
         squares: BitBoard,
         ignore_color: Option<Color>,
@@ -237,7 +247,7 @@ impl Board {
         for piece in self.pieces.iter() {
             match self.convert_board_type(piece.position.get_level()) {
                 Some(board_type) => {
-                    self.occupied_piece[piece.color][board_type] |= piece.position;
+                    self.occupied_piece[piece.color][board_type] |= piece.position.remove_level();
                 }
                 None => (),
             }
@@ -307,5 +317,16 @@ impl Board {
         }
 
         true
+    }
+
+    pub fn set_en_passant(&mut self, old_square: BitBoard, new_square: BitBoard) {
+        self.en_passant = Some(EnPassant {
+            old_square,
+            new_square,
+        });
+    }
+
+    pub fn remove_en_passant(&mut self) {
+        self.en_passant = None;
     }
 }
