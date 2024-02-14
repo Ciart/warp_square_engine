@@ -175,8 +175,7 @@ impl Piece {
                             attacks[*board_type] |= *square;
                         }
                     }
-                }
-                else {
+                } else {
                     attacks[*board_type] |= *square;
                 }
             }
@@ -316,6 +315,48 @@ impl Piece {
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
                 attacks[*board_type] |= *square;
+            }
+        }
+
+        // TODO: 판이 움직였어도 캐슬링이 가능한지? 킹 사이드 캐슬링의 결과가 어떻게 되는지?
+        if !self.is_moved {
+            match self.color {
+                Color::White => {
+                    // 킹 사이드 캐슬링
+                    if let Some(right_piece) = board.get_piece(BitBoard::E0 | BitBoard::KL1) {
+                        if !right_piece.is_moved {
+                            attacks[BoardType::WhiteKing] |= BitBoard::E0;
+                        }
+                    }
+
+                    // 퀸 사이드 캐슬링
+                    if let Some(left_piece) = board.get_piece(BitBoard::Z0 | BitBoard::QL1) {
+                        let is_between_empty = !board.occupied_piece.union()[BoardType::WhiteQueen]
+                            .contains(BitBoard::A0);
+
+                        if !left_piece.is_moved && is_between_empty {
+                            attacks[BoardType::WhiteQueen] |= BitBoard::Z0;
+                        }
+                    }
+                }
+                Color::Black => {
+                    // 킹 사이드 캐슬링
+                    if let Some(right_piece) = board.get_piece(BitBoard::E9 | BitBoard::KL6) {
+                        if !right_piece.is_moved {
+                            attacks[BoardType::BlackKing] |= BitBoard::E9;
+                        }
+                    }
+
+                    // 퀸 사이드 캐슬링
+                    if let Some(left_piece) = board.get_piece(BitBoard::Z9 | BitBoard::QL6) {
+                        let is_between_empty = !board.occupied_piece.union()[BoardType::BlackQueen]
+                            .contains(BitBoard::A9);
+
+                        if !left_piece.is_moved && is_between_empty {
+                            attacks[BoardType::BlackQueen] |= BitBoard::Z9;
+                        }
+                    }
+                }
             }
         }
 

@@ -98,6 +98,36 @@ impl PieceMove {
 
         false
     }
+
+    pub fn is_king_side_castling(&self, board: &Board) -> bool {
+        let piece = match board.get_piece(BitBoard::from_square(&self.source)) {
+            Some(piece) => piece,
+            None => return false,
+        };
+
+        if piece.piece_type != PieceType::King && piece.is_moved {
+            return false;
+        }
+
+        todo!()
+    }
+
+    pub fn is_queen_side_castling(&self, board: &Board) -> bool {
+        let piece = match board.get_piece(BitBoard::from_square(&self.source)) {
+            Some(piece) => piece,
+            None => return false,
+        };
+
+        if piece.piece_type != PieceType::King && piece.is_moved {
+            return false;
+        }
+
+        todo!()
+    }
+
+    pub fn is_castling(&self, board: &Board) -> bool {
+        self.is_king_side_castling(board) || self.is_queen_side_castling(board)
+    }
 }
 
 impl ChessMove for PieceMove {
@@ -120,7 +150,52 @@ impl ChessMove for PieceMove {
             board.remove_en_passant();
         }
 
-        board.move_piece(source, destination, self.promotion)
+        // TODO: 반복되는 부분 함수로 분리
+        if self.is_king_side_castling(board) {
+            match board.turn {
+                Color::White => {
+                    let piece = board.remove_piece(BitBoard::E0 | BitBoard::KL1).unwrap();
+
+                    let result = board.move_piece(source, destination, self.promotion);
+
+                    board.set_piece(BitBoard::D0 | BitBoard::KL1, piece.piece_type, piece.color);
+
+                    result
+                },
+                Color::Black => {
+                    let piece = board.remove_piece(BitBoard::E9 | BitBoard::KL6).unwrap();
+
+                    let result = board.move_piece(source, destination, self.promotion);
+
+                    board.set_piece(BitBoard::D9 | BitBoard::KL6, piece.piece_type, piece.color);
+
+                    result
+                }
+            }
+        } else if self.is_queen_side_castling(board) {
+            match board.turn {
+                Color::White => {
+                    let piece = board.remove_piece(BitBoard::Z0 | BitBoard::QL1).unwrap();
+
+                    let result = board.move_piece(source, destination, self.promotion);
+
+                    board.set_piece(BitBoard::A0 | BitBoard::QL1, piece.piece_type, piece.color);
+
+                    result
+                },
+                Color::Black => {
+                    let piece = board.remove_piece(BitBoard::Z9 | BitBoard::QL6).unwrap();
+
+                    let result = board.move_piece(source, destination, self.promotion);
+
+                    board.set_piece(BitBoard::A9 | BitBoard::QL6, piece.piece_type, piece.color);
+
+                    result
+                }
+            }
+        } else {
+            board.move_piece(source, destination, self.promotion)
+        }
     }
 
     fn legal(&self, board: &Board) -> bool {
