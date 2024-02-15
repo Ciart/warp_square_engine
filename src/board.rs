@@ -163,7 +163,7 @@ impl Board {
     pub fn set_piece(&mut self, square: BitBoard, piece: PieceType, color: Color) -> Option<Piece> {
         let old_piece = self.remove_piece(square);
 
-        self.pieces.push(Piece::new(square, piece, color));
+        self.pieces.push(Piece::new(square, piece, color, false));
 
         old_piece
     }
@@ -192,6 +192,38 @@ impl Board {
         }
 
         self.pieces.push(piece);
+
+        Ok(())
+    }
+
+    pub fn swap_piece(
+        &mut self,
+        source: BitBoard,
+        destination: BitBoard,
+    ) -> Result<(), &'static str> {
+        let source_piece = match self.remove_piece(source) {
+            Some(piece) => piece,
+            None => return Err("There is no piece at the source"),
+        };
+
+        let destination_piece = match self.remove_piece(destination) {
+            Some(piece) => piece,
+            None => return Err("There is no piece at the destination"),
+        };
+
+        self.pieces.push(Piece::new(
+            source,
+            destination_piece.piece_type,
+            destination_piece.color,
+            true,
+        ));
+
+        self.pieces.push(Piece::new(
+            destination,
+            source_piece.piece_type,
+            source_piece.color,
+            true,
+        ));
 
         Ok(())
     }
@@ -229,6 +261,7 @@ impl Board {
                 };
 
                 piece.position = new_position | destination.into_bit_board();
+                piece.is_moved = true;
 
                 if piece.is_promotion_position() {
                     piece.piece_type = promotion.unwrap_or(PieceType::Queen);
