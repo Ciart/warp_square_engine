@@ -143,7 +143,7 @@ foreign_class!(class PieceMove {
 
 foreign_class!(class BoardMove {
     self_type BoardMove;
-    constructor BoardMove::new(source: Level, destination: Level, promotion: Option<PieceType>) -> Self;
+    constructor BoardMove::new(source: Level, destination: Level, promotion: Option<PieceType>) -> BoardMove;
     fn BoardMove::getSource(&self) -> Level {
         this.source.clone()
     }
@@ -191,10 +191,24 @@ foreign_class!(class Game {
     self_type Game;
     constructor Game::new() -> Game;
     fn Game::get_attack_squares(&self, square: &Square) -> Vec<Square>; alias getAttackSquares;
-    fn Game::legal_move(&self, _: PieceMove) -> bool; alias legalMove;
-    fn Game::legal_move(&self, _: BoardMove) -> bool; alias legalMove;
-    fn Game::push_move(&mut self, _: PieceMove) -> Result<(), &'static str>; alias pushMove;
-    fn Game::pop_move(&mut self) -> Result<PieceMove, &'static str>; alias popMove;
+    fn Game::legalPieceMove(&self, pieceMove: PieceMove) -> bool {
+        this.legal_move(&pieceMove)
+    }
+    fn Game::legalBoardMove(&self, boardMove: BoardMove) -> bool {
+        this.legal_move(&boardMove)
+    }
+    fn Game::pushPieceMove(&mut self, pieceMove: PieceMove) -> Result<(), &'static str> {
+        this.push_move(pieceMove)
+    }
+    fn Game::pushBoardMove(&mut self, boardMove: BoardMove) -> Result<(), &'static str> {
+        this.push_move(boardMove)
+    }
+    fn Game::popMove(&mut self, boardMove: BoardMove) -> Result<(), &'static str> {
+        match this.pop_move() {
+            Ok(chess_move) => Ok(()),
+            Err(e) => Err(e),
+        }
+    }
     fn Game::print(&self);
     fn Game::getTurn(&self) -> Color {
         this.board.turn
@@ -218,22 +232,22 @@ foreign_class!(class Game {
         this.board.is_checkmate()
     }
     fn Game::isPromotion(&self, pieceMove: PieceMove) -> bool {
-        pieceMove.is_promotion(&self.board)
+        pieceMove.is_promotion(&this.board)
     }
     fn Game::isEnPassant(&self, pieceMove: PieceMove) -> bool {
-        pieceMove.is_en_passant(&self.board)
+        pieceMove.is_en_passant(&this.board)
     }
     fn Game::isKingSideCastling(&self, pieceMove: PieceMove) -> bool {
-        pieceMove.is_king_side_castling(&self.board)
+        pieceMove.is_king_side_castling(&this.board)
     }
     fn Game::isQueenSideCastling(&self, pieceMove: PieceMove) -> bool {
-        pieceMove.is_queen_side_castling(&self.board)
+        pieceMove.is_queen_side_castling(&this.board)
     }
     fn Game::isCastling(&self, pieceMove: PieceMove) -> bool {
-        pieceMove.is_castling(&self.board)
+        pieceMove.is_castling(&this.board)
     }
     fn Game::isCapture(&self, pieceMove: PieceMove) -> bool {
-        pieceMove.is_capture(&self.board)
+        pieceMove.is_capture(&this.board)
     }
     foreign_code r#"
     static {
