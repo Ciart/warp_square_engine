@@ -111,7 +111,9 @@ impl PieceMove {
         let source = BitBoard::from_square(&self.source);
         let destination = BitBoard::from_square(&self.destination);
 
-        if destination != BitBoard::E0 | BitBoard::KL1 && destination != BitBoard::E9 | BitBoard::KL6 {
+        if destination != BitBoard::E0 | BitBoard::KL1
+            && destination != BitBoard::E9 | BitBoard::KL6
+        {
             return false;
         }
 
@@ -140,7 +142,9 @@ impl PieceMove {
         let source = BitBoard::from_square(&self.source);
         let destination = BitBoard::from_square(&self.destination);
 
-        if destination != BitBoard::Z0 | BitBoard::QL1 && destination != BitBoard::Z9 | BitBoard::QL6 {
+        if destination != BitBoard::A0 | BitBoard::QL1
+            && destination != BitBoard::A9 | BitBoard::QL6
+        {
             return false;
         }
 
@@ -209,47 +213,26 @@ impl ChessMove for PieceMove {
             board.remove_en_passant();
         }
 
-        // TODO: 반복되는 부분 함수로 분리
         if self.is_king_side_castling(board) {
             match board.turn {
                 Color::White => {
-                    let piece = board.remove_piece(BitBoard::E0 | BitBoard::KL1).unwrap();
-
-                    let result = board.move_piece(source, destination, self.promotion);
-
-                    board.set_piece(BitBoard::D0 | BitBoard::KL1, piece.piece_type, piece.color);
-
-                    result
-                },
+                    board.swap_piece(BitBoard::D0 | BitBoard::KL1, BitBoard::E0 | BitBoard::KL1)
+                }
                 Color::Black => {
-                    let piece = board.remove_piece(BitBoard::E9 | BitBoard::KL6).unwrap();
-
-                    let result = board.move_piece(source, destination, self.promotion);
-
-                    board.set_piece(BitBoard::D9 | BitBoard::KL6, piece.piece_type, piece.color);
-
-                    result
+                    board.swap_piece(BitBoard::D9 | BitBoard::KL6, BitBoard::E9 | BitBoard::KL6)
                 }
             }
         } else if self.is_queen_side_castling(board) {
             match board.turn {
                 Color::White => {
-                    let piece = board.remove_piece(BitBoard::Z0 | BitBoard::QL1).unwrap();
-
-                    let result = board.move_piece(source, destination, self.promotion);
-
-                    board.set_piece(BitBoard::A0 | BitBoard::QL1, piece.piece_type, piece.color);
-
-                    result
-                },
+                    board.swap_piece(BitBoard::D0 | BitBoard::KL1, BitBoard::Z0 | BitBoard::QL1).and_then(|_| {
+                        board.move_piece(BitBoard::Z0 | BitBoard::QL1, BitBoard::A0 | BitBoard::QL1, None)
+                    })
+                }
                 Color::Black => {
-                    let piece = board.remove_piece(BitBoard::Z9 | BitBoard::QL6).unwrap();
-
-                    let result = board.move_piece(source, destination, self.promotion);
-
-                    board.set_piece(BitBoard::A9 | BitBoard::QL6, piece.piece_type, piece.color);
-
-                    result
+                    board.swap_piece(BitBoard::D9 | BitBoard::KL6, BitBoard::Z9 | BitBoard::QL6).and_then(|_| {
+                        board.move_piece(BitBoard::Z9 | BitBoard::QL6, BitBoard::A9 | BitBoard::QL6, None)
+                    })
                 }
             }
         } else {
@@ -333,16 +316,40 @@ impl ChessMove for BoardMove {
         // TODO: 함수로 분리해야 함
         let level_map: HashMap<Level, Vec<Level>> = HashMap::from([
             (Level::QL1, vec![Level::QL2, Level::QL3, Level::KL1]),
-            (Level::QL2, vec![Level::QL1, Level::QL3, Level::QL4, Level::KL2]),
-            (Level::QL3, vec![Level::QL1, Level::QL2, Level::QL4, Level::QL5, Level::KL3]),
-            (Level::QL4, vec![Level::QL2, Level::QL3, Level::QL5, Level::QL6, Level::KL4]),
-            (Level::QL5, vec![Level::QL3, Level::QL4, Level::QL6, Level::KL5]),
+            (
+                Level::QL2,
+                vec![Level::QL1, Level::QL3, Level::QL4, Level::KL2],
+            ),
+            (
+                Level::QL3,
+                vec![Level::QL1, Level::QL2, Level::QL4, Level::QL5, Level::KL3],
+            ),
+            (
+                Level::QL4,
+                vec![Level::QL2, Level::QL3, Level::QL5, Level::QL6, Level::KL4],
+            ),
+            (
+                Level::QL5,
+                vec![Level::QL3, Level::QL4, Level::QL6, Level::KL5],
+            ),
             (Level::QL6, vec![Level::QL4, Level::QL5, Level::KL6]),
             (Level::KL1, vec![Level::KL2, Level::KL3, Level::QL1]),
-            (Level::KL2, vec![Level::KL1, Level::KL3, Level::KL4, Level::QL2]),
-            (Level::KL3, vec![Level::KL1, Level::KL2, Level::KL4, Level::KL5, Level::QL3]),
-            (Level::KL4, vec![Level::KL2, Level::KL3, Level::KL5, Level::KL6, Level::QL4]),
-            (Level::KL5, vec![Level::KL3, Level::KL4, Level::KL6, Level::QL5]),
+            (
+                Level::KL2,
+                vec![Level::KL1, Level::KL3, Level::KL4, Level::QL2],
+            ),
+            (
+                Level::KL3,
+                vec![Level::KL1, Level::KL2, Level::KL4, Level::KL5, Level::QL3],
+            ),
+            (
+                Level::KL4,
+                vec![Level::KL2, Level::KL3, Level::KL5, Level::KL6, Level::QL4],
+            ),
+            (
+                Level::KL5,
+                vec![Level::KL3, Level::KL4, Level::KL6, Level::QL5],
+            ),
             (Level::KL6, vec![Level::KL4, Level::KL5, Level::QL6]),
         ]);
 

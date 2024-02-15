@@ -54,13 +54,13 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new(position: BitBoard, piece_type: PieceType, color: Color) -> Self {
+    pub fn new(position: BitBoard, piece_type: PieceType, color: Color, is_moved: bool) -> Self {
         Self {
             piece_type,
             color,
             position,
             attacks: BitBoardSet::new(),
-            is_moved: false,
+            is_moved: is_moved,
         }
     }
 
@@ -167,7 +167,11 @@ impl Piece {
                 if *is_empty {
                     if let Some(en_passant) = &board.en_passant {
                         // 앙파상 보드 타입 확인
-                        if *board_type != board.convert_board_type(en_passant.old_square.get_level()).unwrap() {
+                        if *board_type
+                            != board
+                                .convert_board_type(en_passant.old_square.get_level())
+                                .unwrap()
+                        {
                             break;
                         }
 
@@ -335,7 +339,7 @@ impl Piece {
                             .contains(BitBoard::A0);
 
                         if !left_piece.is_moved && is_between_empty {
-                            attacks[BoardType::WhiteQueen] |= BitBoard::Z0;
+                            attacks[BoardType::WhiteQueen] |= BitBoard::A0;
                         }
                     }
                 }
@@ -353,7 +357,7 @@ impl Piece {
                             .contains(BitBoard::A9);
 
                         if !left_piece.is_moved && is_between_empty {
-                            attacks[BoardType::BlackQueen] |= BitBoard::Z9;
+                            attacks[BoardType::BlackQueen] |= BitBoard::A9;
                         }
                     }
                 }
