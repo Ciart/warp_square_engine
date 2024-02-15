@@ -19,6 +19,8 @@ pub struct EnPassant {
 
 pub struct BoardSnapshot {
     turn: Color,
+    full_move_number: u32,
+    half_move_clock: u32,
     pieces: Vec<Piece>,
     captured_pieces: Vec<Piece>,
     board_set: [(BoardType, Level); 7],
@@ -31,6 +33,8 @@ impl BoardSnapshot {
     pub fn new(board: &Board) -> Self {
         Self {
             turn: board.turn,
+            full_move_number: board.full_move_number,
+            half_move_clock: board.half_move_clock,
             pieces: board.pieces.clone(),
             captured_pieces: board.captured_pieces.clone(),
             board_set: board.board_set.clone(),
@@ -42,6 +46,8 @@ impl BoardSnapshot {
 
     pub fn restore(&self, board: &mut Board) {
         board.turn = self.turn;
+        board.full_move_number = self.full_move_number;
+        board.half_move_clock = self.half_move_clock;
         board.pieces = self.pieces.clone();
         board.captured_pieces = self.captured_pieces.clone();
         board.board_set = self.board_set.clone();
@@ -54,6 +60,8 @@ impl BoardSnapshot {
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct Board {
     pub turn: Color,
+    pub full_move_number: u32,
+    pub half_move_clock: u32,
     pub pieces: Vec<Piece>,
     pub captured_pieces: Vec<Piece>,
     pub board_set: [(BoardType, Level); 7],
@@ -66,6 +74,8 @@ impl Board {
     pub fn new() -> Self {
         Self {
             turn: Color::White,
+            full_move_number: 1,
+            half_move_clock: 0,
             pieces: Vec::new(),
             captured_pieces: Vec::new(),
             board_set: [

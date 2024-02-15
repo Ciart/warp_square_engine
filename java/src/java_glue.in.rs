@@ -3,7 +3,7 @@ use ::warp_square_engine::{
     bit_board::BitBoard,
     game::Game,
     piece::{Piece, PieceType},
-    piece_move::PieceMove,
+    chess_move::{PieceMove, BoardMove},
     square::{Color, File, Level, Rank, Square},
 };
 
@@ -127,6 +127,32 @@ foreign_class!(class PieceMove {
     fn PieceMove::getDestination(&self) -> Square {
         this.destination.clone()
     }
+    fn PieceMove::getPromotion(&self) -> Option<PieceType> {
+        this.promotion.clone()
+    }
+    foreign_code r#"
+    static {
+        try {
+            NativeUtils.loadLibraryFromJar();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+"#;
+});
+
+foreign_class!(class BoardMove {
+    self_type BoardMove;
+    constructor BoardMove::new(source: Level, destination: Level, promotion: Option<PieceType>) -> Self;
+    fn BoardMove::getSource(&self) -> Level {
+        this.source.clone()
+    }
+    fn BoardMove::getDestination(&self) -> Level {
+        this.destination.clone()
+    }
+    fn BoardMove::getPromotion(&self) -> Option<PieceType> {
+        this.promotion.clone()
+    }
     foreign_code r#"
     static {
         try {
@@ -166,11 +192,18 @@ foreign_class!(class Game {
     constructor Game::new() -> Game;
     fn Game::get_attack_squares(&self, square: &Square) -> Vec<Square>; alias getAttackSquares;
     fn Game::legal_move(&self, _: PieceMove) -> bool; alias legalMove;
+    fn Game::legal_move(&self, _: BoardMove) -> bool; alias legalMove;
     fn Game::push_move(&mut self, _: PieceMove) -> Result<(), &'static str>; alias pushMove;
     fn Game::pop_move(&mut self) -> Result<PieceMove, &'static str>; alias popMove;
     fn Game::print(&self);
     fn Game::getTurn(&self) -> Color {
-        this.turn
+        this.board.turn
+    }
+    fn Game::getFullMoveNumber(&self) -> u32 {
+        this.board.full_move_number
+    }
+    fn Game::getHalfMoveClock(&self) -> u32 {
+        this.board.half_move_clock
     }
     fn Game::getPieces(&self) -> Vec<Piece> {
         this.board.pieces.clone()
@@ -183,6 +216,24 @@ foreign_class!(class Game {
     }
     fn Game::isCheckmate(&self) -> bool {
         this.board.is_checkmate()
+    }
+    fn Game::isPromotion(&self, pieceMove: PieceMove) -> bool {
+        pieceMove.is_promotion(&self.board)
+    }
+    fn Game::isEnPassant(&self, pieceMove: PieceMove) -> bool {
+        pieceMove.is_en_passant(&self.board)
+    }
+    fn Game::isKingSideCastling(&self, pieceMove: PieceMove) -> bool {
+        pieceMove.is_king_side_castling(&self.board)
+    }
+    fn Game::isQueenSideCastling(&self, pieceMove: PieceMove) -> bool {
+        pieceMove.is_queen_side_castling(&self.board)
+    }
+    fn Game::isCastling(&self, pieceMove: PieceMove) -> bool {
+        pieceMove.is_castling(&self.board)
+    }
+    fn Game::isCapture(&self, pieceMove: PieceMove) -> bool {
+        pieceMove.is_capture(&self.board)
     }
     foreign_code r#"
     static {

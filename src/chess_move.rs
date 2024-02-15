@@ -23,6 +23,14 @@ pub trait ChessMove {
 
         board.is_check()
     }
+
+    fn as_piece_move(&self) -> Option<&PieceMove> {
+        None
+    }
+
+    fn as_board_move(&self) -> Option<&BoardMove> {
+        None
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
@@ -100,33 +108,84 @@ impl PieceMove {
     }
 
     pub fn is_king_side_castling(&self, board: &Board) -> bool {
-        let piece = match board.get_piece(BitBoard::from_square(&self.source)) {
+        let source = BitBoard::from_square(&self.source);
+        let destination = BitBoard::from_square(&self.destination);
+
+        if destination != BitBoard::E0 | BitBoard::KL1 && destination != BitBoard::E9 | BitBoard::KL6 {
+            return false;
+        }
+
+        let source_piece = match board.get_piece(source) {
             Some(piece) => piece,
             None => return false,
         };
 
-        if piece.piece_type != PieceType::King && piece.is_moved {
+        let destination_piece = match board.get_piece(destination) {
+            Some(piece) => piece,
+            None => return false,
+        };
+
+        if source_piece.piece_type != PieceType::King || source_piece.is_moved {
             return false;
         }
 
-        todo!()
+        if source_piece.color != destination_piece.color || destination_piece.is_moved {
+            return false;
+        }
+
+        true
     }
 
     pub fn is_queen_side_castling(&self, board: &Board) -> bool {
-        let piece = match board.get_piece(BitBoard::from_square(&self.source)) {
+        let source = BitBoard::from_square(&self.source);
+        let destination = BitBoard::from_square(&self.destination);
+
+        if destination != BitBoard::Z0 | BitBoard::QL1 && destination != BitBoard::Z9 | BitBoard::QL6 {
+            return false;
+        }
+
+        let source_piece = match board.get_piece(source) {
             Some(piece) => piece,
             None => return false,
         };
 
-        if piece.piece_type != PieceType::King && piece.is_moved {
+        let destination_piece = match board.get_piece(destination) {
+            Some(piece) => piece,
+            None => return false,
+        };
+
+        if source_piece.piece_type != PieceType::King || source_piece.is_moved {
             return false;
         }
 
-        todo!()
+        if source_piece.color != destination_piece.color || destination_piece.is_moved {
+            return false;
+        }
+
+        true
     }
 
     pub fn is_castling(&self, board: &Board) -> bool {
         self.is_king_side_castling(board) || self.is_queen_side_castling(board)
+    }
+
+    pub fn is_capture(&self, board: &Board) -> bool {
+        let destination = BitBoard::from_square(&self.destination);
+
+        if let Some(piece) = board.get_piece(destination) {
+            piece.color != board.turn
+        } else {
+            false
+        }
+    }
+
+    pub fn get_source_piece(&self, board: &Board) -> Option<PieceType> {
+        let source = BitBoard::from_square(&self.source);
+
+        match board.get_piece(source) {
+            Some(piece) => Some(piece.piece_type),
+            None => None,
+        }
     }
 }
 
@@ -226,13 +285,16 @@ impl ChessMove for PieceMove {
 
         true
     }
+
+    fn as_piece_move(&self) -> Option<&PieceMove> {
+        Some(self)
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct BoardMove {
     pub source: Level,
     pub destination: Level,
-    // TODO: 여러 폰이 동시에 프로모션하는 경우에는 어떻게 해야 할까?
     pub promotion: Option<PieceType>,
 }
 
@@ -311,5 +373,9 @@ impl ChessMove for BoardMove {
         }
 
         is_can_move
+    }
+
+    fn as_board_move(&self) -> Option<&BoardMove> {
+        Some(self)
     }
 }

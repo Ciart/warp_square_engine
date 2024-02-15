@@ -157,6 +157,23 @@ impl Game {
     pub fn push_move(&mut self, chess_move: impl ChessMove + 'static) -> Result<(), &'static str> {
         let snapshot = BoardSnapshot::new(&self.board);
 
+        if self.board.turn == Color::Black {
+            self.board.full_move_number += 1;
+        }
+
+        self.board.half_move_clock += 1;
+
+        if let Some(piece_move) = chess_move.as_piece_move() {
+            let piece = self
+                .board
+                .get_piece(BitBoard::from_square(&piece_move.source))
+                .unwrap();
+
+            if piece.piece_type == PieceType::Pawn || piece_move.is_capture(&self.board) {
+                self.board.half_move_clock = 0;
+            }
+        }
+
         let result = chess_move.run(&mut self.board);
         self.board.update();
 
