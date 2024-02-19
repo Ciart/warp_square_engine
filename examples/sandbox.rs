@@ -1,11 +1,12 @@
 extern crate warp_square_engine;
 
 use std::io;
-use warp_square_engine::{piece_move::PieceMove, square::{File, Level, Rank, Square}};
-use warp_square_engine::bit_board::{BitBoard, BitBoardSet, BoardType};
-use warp_square_engine::board::{Board, BoardSnapshot};
+use warp_square_engine::board_type::BoardType;
+use warp_square_engine::square::{File, Level, Rank};
+use warp_square_engine::bit_board::BitBoard;
+use warp_square_engine::board::Board;
 use warp_square_engine::game::Game;
-use warp_square_engine::piece::{Piece, PieceType};
+use warp_square_engine::piece::PieceType;
 use warp_square_engine::square::Color;
 
 fn main() {
