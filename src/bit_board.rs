@@ -1,5 +1,3 @@
-use std::ops::{BitAnd, BitOr, Index, IndexMut};
-
 use bitflags::bitflags;
 
 use crate::square::{Color, File, Level, Rank, Square, NUM_RANKS};
@@ -204,7 +202,7 @@ impl BitBoard {
         Self::from_bits_retain(((*self & !Self::ZERO_RANKS).bits() >> 1) << NUM_RANKS)
     }
 
-        pub fn up_left(&self) -> Self {
+    pub fn up_left(&self) -> Self {
         Self::from_bits_retain(((*self & !Self::NINE_RANKS).bits() << 1) >> NUM_RANKS)
     }
 
@@ -259,8 +257,15 @@ impl BitBoard {
 
             current = next;
         }
-        
+
         result
+    }
+
+    pub fn rank_distance(&self, other: &Self) -> u8 {
+        self.bits()
+            .trailing_zeros()
+            .abs_diff(other.bits().trailing_zeros()) as u8
+            % NUM_RANKS
     }
 
     pub fn get_rank(&self) -> Rank {
@@ -306,127 +311,5 @@ impl BitBoard {
 
     pub fn remove_level(&self) -> Self {
         *self & !Self::LEVEL_MASK
-    }
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
-pub enum BoardType {
-    White,
-    Neutral,
-    Black,
-    WhiteQueen,
-    WhiteKing,
-    BlackQueen,
-    BlackKing,
-}
-
-impl BoardType {
-    pub fn iter() -> impl Iterator<Item = Self> {
-        [
-            Self::White,
-            Self::Neutral,
-            Self::Black,
-            Self::WhiteQueen,
-            Self::WhiteKing,
-            Self::BlackQueen,
-            Self::BlackKing,
-        ]
-        .iter()
-        .copied()
-    }
-}
-
-#[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
-pub struct BitBoardSet {
-    raw: [BitBoard; 7],
-}
-
-impl BitBoardSet {
-    pub fn new() -> Self {
-        Self {
-            raw: [BitBoard::EMPTY; 7],
-        }
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = &BitBoard> {
-        self.raw.iter()
-    }
-
-    pub fn union(&self) -> BitBoard {
-        self.raw.iter().fold(BitBoard::EMPTY, |acc, x| acc | *x)
-    }
-
-    pub fn intersection(&self) -> BitBoard {
-        self.raw.iter().fold(BitBoard::all(), |acc, x| acc & *x)
-    }
-}
-
-impl Index<BoardType> for BitBoardSet {
-    type Output = BitBoard;
-
-    fn index(&self, index: BoardType) -> &Self::Output {
-        &self.raw[index as usize]
-    }
-}
-
-impl IndexMut<BoardType> for BitBoardSet {
-    fn index_mut(&mut self, index: BoardType) -> &mut Self::Output {
-        &mut self.raw[index as usize]
-    }
-}
-
-impl BitOr<Self> for BitBoardSet {
-    type Output = BitBoardSet;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        let mut result = self.clone();
-
-        for (i, bit_board) in result.raw.iter_mut().enumerate() {
-            *bit_board |= rhs.raw[i];
-        }
-
-        result
-    }
-}
-
-impl BitOr<&Self> for BitBoardSet {
-    type Output = BitBoardSet;
-
-    fn bitor(self, rhs: &Self) -> Self::Output {
-        let mut result = self.clone();
-
-        for (i, bit_board) in result.raw.iter_mut().enumerate() {
-            *bit_board |= rhs.raw[i];
-        }
-
-        result
-    }
-}
-
-impl BitAnd<Self> for BitBoardSet {
-    type Output = BitBoardSet;
-
-    fn bitand(self, rhs: Self) -> Self::Output {
-        let mut result = self.clone();
-
-        for (i, bit_board) in result.raw.iter_mut().enumerate() {
-            *bit_board &= rhs.raw[i];
-        }
-
-        result
-    }
-}
-
-impl BitAnd<&Self> for BitBoardSet {
-    type Output = BitBoardSet;
-
-    fn bitand(self, rhs: &Self) -> Self::Output {
-        let mut result = self.clone();
-
-        for (i, bit_board) in result.raw.iter_mut().enumerate() {
-            *bit_board &= rhs.raw[i];
-        }
-
-        result
     }
 }

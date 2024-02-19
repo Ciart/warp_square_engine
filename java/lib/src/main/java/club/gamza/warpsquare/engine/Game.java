@@ -19,35 +19,59 @@ public final class Game {
     }
     private static native Square [] do_getAttackSquares(long self, long square);
 
-    public final boolean legalMove(PieceMove a0) {
-        long a00 = a0.mNativeObj;
-        a0.mNativeObj = 0;
+    public final boolean legalPieceMove(PieceMove pieceMove) {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
 
-        boolean ret = do_legalMove(mNativeObj, a00);
+        boolean ret = do_legalPieceMove(mNativeObj, a0);
 
-        JNIReachabilityFence.reachabilityFence1(a0);
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
 
         return ret;
     }
-    private static native boolean do_legalMove(long self, long a0);
+    private static native boolean do_legalPieceMove(long self, long pieceMove);
 
-    public final void pushMove(PieceMove a0) throws Exception {
-        long a00 = a0.mNativeObj;
-        a0.mNativeObj = 0;
+    public final boolean legalBoardMove(BoardMove boardMove) {
+        long a0 = boardMove.mNativeObj;
+        boardMove.mNativeObj = 0;
 
-        do_pushMove(mNativeObj, a00);
+        boolean ret = do_legalBoardMove(mNativeObj, a0);
 
-        JNIReachabilityFence.reachabilityFence1(a0);
+        JNIReachabilityFence.reachabilityFence1(boardMove);
+
+        return ret;
     }
-    private static native void do_pushMove(long self, long a0) throws Exception;
+    private static native boolean do_legalBoardMove(long self, long boardMove);
 
-    public final PieceMove popMove() throws Exception {
-        long ret = do_popMove(mNativeObj);
-        PieceMove convRet = new PieceMove(InternalPointerMarker.RAW_PTR, ret);
+    public final void pushPieceMove(PieceMove pieceMove) throws Exception {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
 
-        return convRet;
+        do_pushPieceMove(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
     }
-    private static native long do_popMove(long self) throws Exception;
+    private static native void do_pushPieceMove(long self, long pieceMove) throws Exception;
+
+    public final void pushBoardMove(BoardMove boardMove) throws Exception {
+        long a0 = boardMove.mNativeObj;
+        boardMove.mNativeObj = 0;
+
+        do_pushBoardMove(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(boardMove);
+    }
+    private static native void do_pushBoardMove(long self, long boardMove) throws Exception;
+
+    public final void popMove(BoardMove boardMove) throws Exception {
+        long a0 = boardMove.mNativeObj;
+        boardMove.mNativeObj = 0;
+
+        do_popMove(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(boardMove);
+    }
+    private static native void do_popMove(long self, long boardMove) throws Exception;
 
     public final void print() {
         do_print(mNativeObj);
@@ -61,6 +85,20 @@ public final class Game {
         return convRet;
     }
     private static native int do_getTurn(long self);
+
+    public final long getFullMoveNumber() {
+        long ret = do_getFullMoveNumber(mNativeObj);
+
+        return ret;
+    }
+    private static native long do_getFullMoveNumber(long self);
+
+    public final long getHalfMoveClock() {
+        long ret = do_getHalfMoveClock(mNativeObj);
+
+        return ret;
+    }
+    private static native long do_getHalfMoveClock(long self);
 
     public final Piece [] getPieces() {
         Piece [] ret = do_getPieces(mNativeObj);
@@ -89,6 +127,78 @@ public final class Game {
         return ret;
     }
     private static native boolean do_isCheckmate(long self);
+
+    public final boolean isPromotion(PieceMove pieceMove) {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
+
+        boolean ret = do_isPromotion(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
+
+        return ret;
+    }
+    private static native boolean do_isPromotion(long self, long pieceMove);
+
+    public final boolean isEnPassant(PieceMove pieceMove) {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
+
+        boolean ret = do_isEnPassant(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
+
+        return ret;
+    }
+    private static native boolean do_isEnPassant(long self, long pieceMove);
+
+    public final boolean isKingSideCastling(PieceMove pieceMove) {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
+
+        boolean ret = do_isKingSideCastling(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
+
+        return ret;
+    }
+    private static native boolean do_isKingSideCastling(long self, long pieceMove);
+
+    public final boolean isQueenSideCastling(PieceMove pieceMove) {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
+
+        boolean ret = do_isQueenSideCastling(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
+
+        return ret;
+    }
+    private static native boolean do_isQueenSideCastling(long self, long pieceMove);
+
+    public final boolean isCastling(PieceMove pieceMove) {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
+
+        boolean ret = do_isCastling(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
+
+        return ret;
+    }
+    private static native boolean do_isCastling(long self, long pieceMove);
+
+    public final boolean isCapture(PieceMove pieceMove) {
+        long a0 = pieceMove.mNativeObj;
+        pieceMove.mNativeObj = 0;
+
+        boolean ret = do_isCapture(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(pieceMove);
+
+        return ret;
+    }
+    private static native boolean do_isCapture(long self, long pieceMove);
 
     public synchronized void delete() {
         if (mNativeObj != 0) {

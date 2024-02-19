@@ -1,9 +1,11 @@
 use pyo3::pyclass;
 
 use crate::{
-    bit_board::{BitBoard, BitBoardSet, BoardType},
+    bit_board::BitBoard,
+    bit_board_set::BitBoardSet,
     board::Board,
-    square::{Color, Square},
+    board_type::BoardType,
+    square::{Color, Rank, Square},
 };
 
 #[pyclass]
@@ -52,13 +54,13 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new(position: BitBoard, piece_type: PieceType, color: Color) -> Self {
+    pub fn new(position: BitBoard, piece_type: PieceType, color: Color, is_moved: bool) -> Self {
         Self {
             piece_type,
             color,
             position,
             attacks: BitBoardSet::new(),
-            is_moved: false,
+            is_moved: is_moved,
         }
     }
 
@@ -90,11 +92,34 @@ impl Piece {
         let board_area = board
             .board_set
             .iter()
-            .fold(BitBoard::EMPTY, |acc, (_, level)| {
-                acc | level.get_bit_board()
-            });
+            .fold(BitBoard::EMPTY, |acc, (_, level)| acc | level.get_area());
 
         occupied & board_area
+    }
+
+    pub fn is_promotion_position(&self) -> bool {
+        if self.piece_type != PieceType::Pawn {
+            return false;
+        }
+
+        let end_rank = match self.color {
+            Color::White => {
+                if self.position.get_level().is_main() {
+                    Rank::Eight
+                } else {
+                    Rank::Nine
+                }
+            }
+            Color::Black => {
+                if self.position.get_level().is_main() {
+                    Rank::One
+                } else {
+                    Rank::Zero
+                }
+            }
+        };
+
+        self.position.get_rank() == end_rank
     }
 
     pub fn update_attacks(&mut self, board: &Board) {
@@ -122,7 +147,7 @@ impl Piece {
                 destination |= destination.forward(self.color);
             }
 
-            let empty_boards = board.get_empty_board(destination, None);
+            let empty_boards = board.get_empty_squares(destination, None);
 
             for (board_type, square, is_empty) in &empty_boards {
                 if *is_empty {
@@ -133,17 +158,31 @@ impl Piece {
 
         // 공격 행마
         {
-            let destination = position.forward_left(self.color) | position.forward_right(self.color);
+            let destination =
+                position.forward_left(self.color) | position.forward_right(self.color);
 
-            let empty_boards = board.get_empty_board(destination, Some(self.color));
+            let empty_boards = board.get_empty_squares(destination, Some(self.color));
 
             for (board_type, square, is_empty) in &empty_boards {
-                if !*is_empty {
+                if *is_empty {
+                    if let Some(en_passant) = &board.en_passant {
+                        // 앙파상 보드 타입 확인
+                        if *board_type
+                            != board
+                                .convert_board_type(en_passant.old_square.get_level())
+                                .unwrap()
+                        {
+                            break;
+                        }
+
+                        if *square == en_passant.old_square.remove_level() {
+                            attacks[*board_type] |= *square;
+                        }
+                    }
+                } else {
                     attacks[*board_type] |= *square;
                 }
             }
-            
-            // TODO: 앙파상 추가
         }
 
         attacks
@@ -176,7 +215,7 @@ impl Piece {
         destination |=
             BitBoard::from_bits_retain(position.bits() << 21 & (!BitBoard::ZERO_RANKS).bits());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -199,7 +238,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.up_left());
         destination |= position.ray(occupied, |current| current.up_right());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -222,7 +261,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.left());
         destination |= position.ray(occupied, |current| current.right());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -249,7 +288,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.up_left());
         destination |= position.ray(occupied, |current| current.up_right());
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -275,11 +314,53 @@ impl Piece {
         destination |= position.up_left();
         destination |= position.down_right();
 
-        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
                 attacks[*board_type] |= *square;
+            }
+        }
+
+        // TODO: 판이 움직였어도 캐슬링이 가능한지? 킹 사이드 캐슬링의 결과가 어떻게 되는지?
+        if !self.is_moved {
+            match self.color {
+                Color::White => {
+                    // 킹 사이드 캐슬링
+                    if let Some(right_piece) = board.get_piece(BitBoard::E0 | BitBoard::KL1) {
+                        if !right_piece.is_moved {
+                            attacks[BoardType::WhiteKing] |= BitBoard::E0;
+                        }
+                    }
+
+                    // 퀸 사이드 캐슬링
+                    if let Some(left_piece) = board.get_piece(BitBoard::Z0 | BitBoard::QL1) {
+                        let is_between_empty = !board.occupied_piece.union()[BoardType::WhiteQueen]
+                            .contains(BitBoard::A0);
+
+                        if !left_piece.is_moved && is_between_empty {
+                            attacks[BoardType::WhiteQueen] |= BitBoard::A0;
+                        }
+                    }
+                }
+                Color::Black => {
+                    // 킹 사이드 캐슬링
+                    if let Some(right_piece) = board.get_piece(BitBoard::E9 | BitBoard::KL6) {
+                        if !right_piece.is_moved {
+                            attacks[BoardType::BlackKing] |= BitBoard::E9;
+                        }
+                    }
+
+                    // 퀸 사이드 캐슬링
+                    if let Some(left_piece) = board.get_piece(BitBoard::Z9 | BitBoard::QL6) {
+                        let is_between_empty = !board.occupied_piece.union()[BoardType::BlackQueen]
+                            .contains(BitBoard::A9);
+
+                        if !left_piece.is_moved && is_between_empty {
+                            attacks[BoardType::BlackQueen] |= BitBoard::A9;
+                        }
+                    }
+                }
             }
         }
 

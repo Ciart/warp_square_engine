@@ -93,7 +93,7 @@ impl Level {
     }
 
     /// BitBoard 존재 가능 영역
-    pub fn get_bit_board(&self) -> BitBoard {
+    pub fn get_area(&self) -> BitBoard {
         match self {
             Level::White => BitBoard::WHITE_SET,
             Level::Neutral => BitBoard::NEUTRAL_SET,
@@ -111,6 +111,17 @@ impl Level {
             Level::KL5 => BitBoard::KL5_SET,
             Level::KL6 => BitBoard::KL6_SET,
         }
+    }
+
+    pub fn is_main(&self) -> bool {
+        match self {
+            Level::White | Level::Neutral | Level::Black => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_attack(&self) -> bool {
+        !self.is_main()
     }
 }
 

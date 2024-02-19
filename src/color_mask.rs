@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use crate::{bit_board::BitBoardSet, square::Color};
+use crate::{bit_board_set::BitBoardSet, square::Color};
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct ColorMask {

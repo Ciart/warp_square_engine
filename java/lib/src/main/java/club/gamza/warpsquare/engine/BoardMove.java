@@ -2,37 +2,32 @@
 package club.gamza.warpsquare.engine;
 
 
-public final class PieceMove {
+public final class BoardMove {
 
-    public PieceMove(Square source, Square destination, PieceType promotion) {
-        long a0 = source.mNativeObj;
-        source.mNativeObj = 0;
-
-        long a1 = destination.mNativeObj;
-        destination.mNativeObj = 0;
-
+    public BoardMove(Level source, Level destination, PieceType promotion) {
+        int a0 = source.getValue();        int a1 = destination.getValue();
         int a2 = (promotion != null) ? promotion.getValue() : -1;
 
         mNativeObj = init(a0, a1, a2);
         JNIReachabilityFence.reachabilityFence3(source, destination, promotion);
     }
-    private static native long init(long source, long destination, int promotion);
+    private static native long init(int source, int destination, int promotion);
 
-    public final Square getSource() {
-        long ret = do_getSource(mNativeObj);
-        Square convRet = new Square(InternalPointerMarker.RAW_PTR, ret);
-
-        return convRet;
-    }
-    private static native long do_getSource(long self);
-
-    public final Square getDestination() {
-        long ret = do_getDestination(mNativeObj);
-        Square convRet = new Square(InternalPointerMarker.RAW_PTR, ret);
+    public final Level getSource() {
+        int ret = do_getSource(mNativeObj);
+        Level convRet = Level.fromInt(ret);
 
         return convRet;
     }
-    private static native long do_getDestination(long self);
+    private static native int do_getSource(long self);
+
+    public final Level getDestination() {
+        int ret = do_getDestination(mNativeObj);
+        Level convRet = Level.fromInt(ret);
+
+        return convRet;
+    }
+    private static native int do_getDestination(long self);
 
     public final java.util.Optional<PieceType> getPromotion() {
         int ret = do_getPromotion(mNativeObj);
@@ -63,7 +58,7 @@ public final class PieceMove {
         }
     }
     private static native void do_delete(long me);
-    /*package*/ PieceMove(InternalPointerMarker marker, long ptr) {
+    /*package*/ BoardMove(InternalPointerMarker marker, long ptr) {
         assert marker == InternalPointerMarker.RAW_PTR;
         this.mNativeObj = ptr;
     }
