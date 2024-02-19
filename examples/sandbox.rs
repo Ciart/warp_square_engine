@@ -1,7 +1,6 @@
 extern crate warp_square_engine;
 
 use std::io;
-use pyo3::ffi::newfunc;
 use warp_square_engine::{piece_move::PieceMove, square::{File, Level, Rank, Square}};
 use warp_square_engine::bit_board::{BitBoard, BitBoardSet, BoardType};
 use warp_square_engine::board::{Board, BoardSnapshot};
@@ -272,7 +271,7 @@ impl SandBoxMode for Game {
 
             for &part_str in sub_parts.iter().as_slice() {
                 let divide_str : &str = &part_str[..2];
-                let mut sub_board_str : String = part_str[2..].to_string();
+                let sub_board_str : String = part_str[2..].to_string();
 
                 for part_char in sub_board_str.chars() {
                     if VOID_CHAR_VEC.contains(&part_char) {
