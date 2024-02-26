@@ -142,7 +142,6 @@ impl CheckFen for &str {
 
         for &part in sub_parts.iter() {
             if !(4..=6).contains(&part.chars().count()) {
-                println!("?? {}", &part.chars().count());
                 eprintln!("Err : You write overflow in fen! at ..{}..", part);
                 return false;
             }
