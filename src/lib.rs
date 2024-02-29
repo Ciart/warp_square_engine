@@ -7,3 +7,4 @@ pub mod color_mask;
 pub mod game;
 pub mod piece;
 pub mod square;
+mod unit_test;
