@@ -191,11 +191,11 @@ foreign_class!(class Game {
     self_type Game;
     constructor Game::new() -> Game;
     fn Game::get_attack_squares(&self, square: &Square) -> Vec<Square>; alias getAttackSquares;
-    fn Game::legalPieceMove(&self, pieceMove: PieceMove) -> bool {
-        this.legal_move(&pieceMove)
+    fn Game::legalPieceMove(&self, pieceMove: &PieceMove) -> bool {
+        this.legal_move(pieceMove)
     }
-    fn Game::legalBoardMove(&self, boardMove: BoardMove) -> bool {
-        this.legal_move(&boardMove)
+    fn Game::legalBoardMove(&self, boardMove: &BoardMove) -> bool {
+        this.legal_move(boardMove)
     }
     fn Game::pushPieceMove(&mut self, pieceMove: PieceMove) -> Result<(), &'static str> {
         this.push_move(pieceMove)
@@ -219,6 +219,7 @@ foreign_class!(class Game {
     fn Game::getHalfMoveClock(&self) -> u32 {
         this.board.half_move_clock
     }
+    // TODO: getPiece
     fn Game::getPieces(&self) -> Vec<Piece> {
         this.board.pieces.clone()
     }
