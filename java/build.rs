@@ -23,7 +23,7 @@ fn main() {
 
 fn flapigen_expand(from: &Path, out: &Path) {
     println!("Run flapigen_expand");
-    let config = DotNetConfig::new("warp_square_engine".to_owned(), "warp_square_engine".into());
+    let config = DotNetConfig::new("WarpSquareEngine".to_owned(), "WarpSquareEngine".into()).native_lib_name("warp_square_engine".to_owned());
     let swig_gen = flapigen::Generator::new(LanguageConfig::DotNetConfig(config));
-    swig_gen.expand("warp_square_engine_native", from, out);
+    swig_gen.expand("warp_square_engine", from, out);
 }
