@@ -226,7 +226,7 @@ mod single_function_unit_test {
 
     #[test]
     fn castling() {
-        let test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R12/k1KR2/q62r1/k62kr".to_string());
+        let test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R12/q62r1/k1KR2/k62k1".to_string());
         test_game.print_sandbox();
 
         test_game.get_attack_squares(&Square::new(Rank::Zero, File::D, Level::KL1))
@@ -252,8 +252,8 @@ mod single_function_unit_test {
             None
         );
 
-        //assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "화이트 킹 사이드 캐슬링");
-        //assert_eq!(PieceMove::is_queen_side_castling(&white_queen_side_castling, &test_game.board), true, "화이트 퀸 사이드 캐슬링");
+        assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "화이트 킹 사이드 캐슬링");
+        assert_eq!(PieceMove::is_queen_side_castling(&white_queen_side_castling, &test_game.board), true, "화이트 퀸 사이드 캐슬링");
 
         let black_king_side_castling = PieceMove::new(
             Square::new(Rank::Nine, File::D, Level::KL6),
@@ -266,18 +266,18 @@ mod single_function_unit_test {
             None
         );
 
-        //assert_eq!(PieceMove::is_king_side_castling(&black_king_side_castling, &test_game.board), true, "블랙 킹 사이드 캐슬링");
-        //assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "블랙 퀸 사이드 캐슬링");
+        assert_eq!(PieceMove::is_king_side_castling(&black_king_side_castling, &test_game.board), true, "블랙 킹 사이드 캐슬링");
+        assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "블랙 퀸 사이드 캐슬링");
 
         let test_game = Game::new_sandbox("4/4/4/b3/4/4/4/4/3B/4/4/4/q1R12/k1KR2/q62r1/k62kr".to_string());
 
-        //assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "블랙 피스가 견제할때 화이트 킹 사이드 캐슬링");
-        //assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "화이트 피스가 견제할때 블랙 퀸 사이드 캐슬링");
+        assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "블랙 피스가 견제할때 화이트 킹 사이드 캐슬링");
+        assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "화이트 피스가 견제할때 블랙 퀸 사이드 캐슬링");
 
         let mut test_game = Game::new_sandbox("NBBN/4/4/4/4/4/4/4/4/4/4/nbbn/q1R12/k1KR2/q62r1/k62kr".to_string());
 
-        //assert_eq!(PieceMove::is_queen_side_castling(&white_queen_side_castling, &test_game.board), true, "중간에 피스가 있을때 화이트 퀸 사이드 캐슬링");
-        //assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "중간에 피스가 있을때 블랙 퀸 사이드 캐슬링");
+        assert_eq!(PieceMove::is_queen_side_castling(&white_queen_side_castling, &test_game.board), true, "중간에 피스가 있을때 화이트 퀸 사이드 캐슬링");
+        assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "중간에 피스가 있을때 블랙 퀸 사이드 캐슬링");
 
         let piece_move = PieceMove::new(
             Square::new(Rank::Zero, File::E, Level::KL1),
@@ -292,7 +292,7 @@ mod single_function_unit_test {
         );
         let _ = test_game.push_move(piece_move);
 
-        //assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "이미 첫 움직임을 한 후에 화이트 킹 사이드 캐슬링");
+        assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "이미 첫 움직임을 한 후에 화이트 킹 사이드 캐슬링");
     }
 
     #[test]
