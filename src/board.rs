@@ -362,6 +362,10 @@ impl Board {
         true
     }
 
+    pub fn is_stalemate(&self) -> bool {
+        todo!()
+    }
+
     pub fn set_en_passant(&mut self, old_square: BitBoard, new_square: BitBoard) {
         self.en_passant = Some(EnPassant {
             old_square,
