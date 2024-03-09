@@ -3,8 +3,8 @@ mod single_function_unit_test {
     use crate::board::Board;
     use crate::chess_move::{BoardMove, PieceMove};
     use crate::game::Game;
+    use crate::piece::{Piece, PieceType};
     use crate::square::{Color, File, Level, Rank, Square};
-    use super::*;
 
     #[test]
     fn check_turn_pass() {
@@ -53,6 +53,21 @@ mod single_function_unit_test {
         assert_eq!(test_game.legal_move(&legal_piece_move), true, "블랙 턴 블랙 기물 움직임");
         assert_ne!(test_game.legal_move(&illegal_piece_move), true, "블랙 턴 화이트 기물 움직임");
         assert_eq!(test_game.legal_move(&black_board_move), true, "블랙 턴 블랙 보드 움직임");
+    }
+
+    #[test]
+    fn board_move() {
+        let test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1P12/q6PK/k122/k6B12".to_string());
+
+        let board_move = BoardMove::new(Level::QL1, Level::QL2, None);
+        assert_eq!(test_game.legal_move(&board_move), true, "보드에 pawn 1개만 있을때");
+        let board_move = BoardMove::new(Level::KL1, Level::KL2, None);
+        assert_eq!(test_game.legal_move(&board_move), true, "보드에 아무것도 없을때");
+        let board_move = BoardMove::new(Level::KL6, Level::KL5, None);
+        assert_ne!(test_game.legal_move(&board_move), true, "보드에 pawn 아닌 기물 1개 일때");
+        let board_move = BoardMove::new(Level::QL6, Level::QL5, None);
+        assert_ne!(test_game.legal_move(&board_move), true, "보드에 기물이 여러개 일때");
+
     }
 
     #[test]
@@ -296,17 +311,61 @@ mod single_function_unit_test {
     }
 
     #[test]
-    fn board_move() {
-        let mut test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1P12/q6PK/k122/k6B12".to_string());
+    fn promotion() {
+        let test_game = Game::new_sandbox("4/4/bnqp/4/4/4/4/4/4/BNQP/4/4/q2pr/k222/q5PR/k522".to_string());
 
-        let board_move = BoardMove::new(Level::QL1, Level::QL2, None);
-        assert_eq!(test_game.legal_move(&board_move), true, "보드에 pawn 1개만 있을때");
-        let board_move = BoardMove::new(Level::KL1, Level::KL2, None);
-        assert_eq!(test_game.legal_move(&board_move), true, "보드에 아무것도 없을때");
-        let board_move = BoardMove::new(Level::KL6, Level::KL5, None);
-        assert_ne!(test_game.legal_move(&board_move), true, "보드에 pawn 아닌 기물 1개 일때");
-        let board_move = BoardMove::new(Level::QL6, Level::QL5, None);
-        assert_ne!(test_game.legal_move(&board_move), true, "보드에 기물이 여러개 일때");
+        let white_bishop_move = PieceMove::new(
+            Square::new(Rank::Seven, File::A, Level::Black),
+            Square::new(Rank::Nine, File::C, Level::Black),
+            Option::from(PieceType::Queen)
+        );
+        let white_knight_move = PieceMove::new(
+            Square::new(Rank::Seven, File::B, Level::Black),
+            Square::new(Rank::Nine, File::A, Level::Black),
+            Option::from(PieceType::Queen)
+        );
+        let white_queen_move = PieceMove::new(
+            Square::new(Rank::Seven, File::C, Level::Black),
+            Square::new(Rank::Nine, File::C, Level::Black),
+            Option::from(PieceType::Knight)
+        );
+        let white_pawn_move = PieceMove::new(
+            Square::new(Rank::Seven, File::D, Level::Black),
+            Square::new(Rank::Nine, File::D, Level::Black),
+            Option::from(PieceType::Queen)
+        );
+        let white_pawn_move_underpromotion = PieceMove::new(
+            Square::new(Rank::Seven, File::D, Level::Black),
+            Square::new(Rank::Nine, File::D, Level::Black),
+            Option::from(PieceType::Bishop)
+        );
+
+        println!("{}", PieceMove::is_promotion(&white_pawn_move, &test_game.board));
+
+        assert_ne!(PieceMove::is_promotion(&white_bishop_move, &test_game.board), true, "화이트 비숍 프로모션");
+        assert_ne!(PieceMove::is_promotion(&white_knight_move, &test_game.board), true, "화이트 나이트 프로모션");
+        assert_ne!(PieceMove::is_promotion(&white_queen_move, &test_game.board), true, "화이트 퀸 프로모션");
+        assert_eq!(PieceMove::is_promotion(&white_pawn_move, &test_game.board), true, "화이트 폰 프로모션");
+        assert_eq!(white_pawn_move_underpromotion.is_promotion(&test_game.board), true, "화이트 폰 언더 프로모션");
+    }
+
+    #[test]
+    fn check() {
+        let test_game = Game::new_sandbox("2K1/PP1P/2q1/4/4/4/4/4/4/4/p1pp/1k2/q122/k122/q622/k622".to_string());
+        test_game.print_sandbox();
+
+        assert_eq!(test_game.board.is_check(), true, "?");
+    }
+
+    #[test]
+    fn checkmate() {
+        let test_game = Game::new_sandbox("PPKP/PP1P/2q1/4/4/4/4/4/4/4/p1pp/1k2/q122/k122/q622/k622".to_string());
+        test_game.print_sandbox();
+
+        assert_eq!(test_game.board.is_checkmate(), true, "?");
+    }
+
+    fn stalemate() {
 
     }
 }
