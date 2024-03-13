@@ -1,10 +1,12 @@
 #[cfg(test)]
 mod single_function_unit_test {
+    use crate::bit_board::BitBoard;
     use crate::board::Board;
     use crate::chess_move::{BoardMove, PieceMove};
     use crate::game::Game;
     use crate::piece::{Piece, PieceType};
     use crate::square::{Color, File, Level, Rank, Square};
+    use crate::square::Color::Black;
 
     #[test]
     fn check_turn_pass() {
@@ -242,19 +244,6 @@ mod single_function_unit_test {
     #[test]
     fn castling() {
         let test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R12/q62r1/k1KR2/k62k1".to_string());
-        test_game.print_sandbox();
-
-        test_game.get_attack_squares(&Square::new(Rank::Zero, File::D, Level::KL1))
-            .iter()
-            .for_each(|x| println!("{:?}", x));
-        // Zero E KL1
-        // Zero A QL1
-        println!(" ");
-        test_game.get_attack_squares(&Square::new(Rank::Nine, File::D, Level::KL6))
-            .iter()
-            .for_each(|x| println!("{:?}", x));
-        // Nine E KL6
-        // Nine A QL6
 
         let white_king_side_castling = PieceMove::new(
             Square::new(Rank::Zero, File::D, Level::KL1),
@@ -312,7 +301,7 @@ mod single_function_unit_test {
 
     #[test]
     fn promotion() {
-        let test_game = Game::new_sandbox("4/4/bnqp/4/4/4/4/4/4/BNQP/4/4/q2pr/k222/q5PR/k522".to_string());
+        let mut test_game = Game::new_sandbox("4/4/bnqp/4/4/4/4/4/4/BNQP/4/4/q2pr2/k222/q52PR/k522".to_string());
 
         let white_bishop_move = PieceMove::new(
             Square::new(Rank::Seven, File::A, Level::Black),
@@ -330,39 +319,71 @@ mod single_function_unit_test {
             Option::from(PieceType::Knight)
         );
         let white_pawn_move = PieceMove::new(
-            Square::new(Rank::Seven, File::D, Level::Black),
-            Square::new(Rank::Nine, File::D, Level::Black),
-            Option::from(PieceType::Queen)
+            Square::new(Rank::Six, File::D, Level::Black),
+            Square::new(Rank::Eight, File::D, Level::Black),
+            None
         );
         let white_pawn_move_underpromotion = PieceMove::new(
-            Square::new(Rank::Seven, File::D, Level::Black),
-            Square::new(Rank::Nine, File::D, Level::Black),
+            Square::new(Rank::Six, File::D, Level::Black),
+            Square::new(Rank::Eight, File::D, Level::Black),
             Option::from(PieceType::Bishop)
         );
 
-        println!("{}", PieceMove::is_promotion(&white_pawn_move, &test_game.board));
+        assert_ne!(white_bishop_move.is_promotion(&test_game.board), true, "화이트 비숍 프로모션");
+        assert_ne!(white_knight_move.is_promotion(&test_game.board), true, "화이트 나이트 프로모션");
+        assert_ne!(white_queen_move.is_promotion(&test_game.board), true, "화이트 퀸 프로모션");
+        assert_eq!(white_pawn_move.is_promotion(&test_game.board), true, "화이트 폰 프로모션");
+        let _ = test_game.push_move(white_pawn_move);
+        assert_eq!(test_game
+                       .board
+                       .get_piece(BitBoard::from_square(
+                           &Square::new(Rank::Eight, File::D, Level::Black))).unwrap().piece_type == PieceType::Queen
+                   , true, "화이트 PieceMove 폰 -> 퀸 프로모션 확인");
 
-        assert_ne!(PieceMove::is_promotion(&white_bishop_move, &test_game.board), true, "화이트 비숍 프로모션");
-        assert_ne!(PieceMove::is_promotion(&white_knight_move, &test_game.board), true, "화이트 나이트 프로모션");
-        assert_ne!(PieceMove::is_promotion(&white_queen_move, &test_game.board), true, "화이트 퀸 프로모션");
-        assert_eq!(PieceMove::is_promotion(&white_pawn_move, &test_game.board), true, "화이트 폰 프로모션");
+        let mut test_game = Game::new_sandbox("4/4/bnqp/4/4/4/4/4/4/BNQP/4/4/q2pr2/k222/q52PR/k522".to_string());
         assert_eq!(white_pawn_move_underpromotion.is_promotion(&test_game.board), true, "화이트 폰 언더 프로모션");
+        let _ = test_game.push_move(white_pawn_move_underpromotion);
+        assert_eq!(test_game
+                       .board
+                       .get_piece(BitBoard::from_square(
+                           &Square::new(Rank::Eight, File::D, Level::Black))).unwrap().piece_type == PieceType::Bishop
+                   , true, "화이트 PieceMove 폰 -> 비숍 프로모션 확인");
+
+        let white_board_move = BoardMove::new(Level::QL5, Level::QL6, None);
+        let _ = test_game.push_move(white_board_move);
+        assert_eq!(test_game
+                       .board
+                       .get_piece(BitBoard::from_square(
+                           &Square::new(Rank::Nine, File::Z, Level::QL6))).unwrap().piece_type == PieceType::Queen
+                   , true, "화이트 BoardMove 폰 -> 퀸 프로모션 확인");
+        assert_eq!(test_game
+                       .board
+                       .get_piece(BitBoard::from_square(
+                           &Square::new(Rank::Nine, File::A, Level::QL6))).unwrap().piece_type == PieceType::Rook
+                   , true, "화이트 BoardMove Pawn 이외 말 프로모션 작용");
     }
 
     #[test]
     fn check() {
-        let test_game = Game::new_sandbox("2K1/PP1P/2q1/4/4/4/4/4/4/4/p1pp/1k2/q122/k122/q622/k622".to_string());
-        test_game.print_sandbox();
+        let mut test_game = Game::new_sandbox("2K1/PP1P/2q1/4/4/4/4/4/4/1Q2/p1pp/1k2/q122/k122/q622/k622".to_string());
 
-        assert_eq!(test_game.board.is_check(), true, "?");
+        assert_eq!(test_game.board.is_check(), true, "화이트 체크");
+
+        test_game.board.turn = Black;
+
+        assert_eq!(test_game.board.is_check(), true, "블랙 체크");
     }
 
     #[test]
     fn checkmate() {
-        let test_game = Game::new_sandbox("PPKP/PP1P/2q1/4/4/4/4/4/4/4/p1pp/1k2/q122/k122/q622/k622".to_string());
+        let mut test_game = Game::new_sandbox("PPKP/PP1P/2q1/4/4/4/4/4/4/1Q2/p1pp/pkpp/q222/k222/q522/k522".to_string());
         test_game.print_sandbox();
 
-        assert_eq!(test_game.board.is_checkmate(), true, "?");
+        assert_eq!(test_game.board.is_checkmate(), true, "화이트 체크 메이트");
+
+        test_game.board.turn = Black;
+
+        assert_eq!(test_game.board.is_checkmate(), true, "블랙 체크 메이트");
     }
 
     fn stalemate() {
