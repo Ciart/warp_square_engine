@@ -99,10 +99,8 @@ impl PieceMove {
         }
 
         if let Some(en_passant) = &board.en_passant {
-            if destination.contains(en_passant.position) {
-                if board.get_piece(destination).is_none() {
-                    return true;
-                }
+            if destination == en_passant.position {
+                return true;
             }
         }
 
@@ -211,8 +209,8 @@ impl ChessMove for PieceMove {
 
         // 앙파상 확인을 위해 변수 업데이트
         if let Some(piece) = board.get_piece(source) {
-            if piece.piece_type == PieceType::Pawn && source.rank_distance(&destination) == 2 {
-                board.set_en_passant(source.forward(piece.color).remove_level(), destination)
+            if piece.piece_type == PieceType::Pawn && source.rank_distance(&destination) == 2 && self.destination.level.is_main() {
+                board.set_en_passant(destination.backward(piece.color) | self.destination.level.into_bit_board(), destination)
             } else {
                 board.remove_en_passant();
             }

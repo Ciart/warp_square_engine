@@ -11,7 +11,6 @@ use crate::{
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct EnPassant {
     /// 잡는 폰이 갈 수 있는 위치
-    /// Level 값이 존재하면 안 된다.
     pub position: BitBoard,
 
     // 앙파상으로 잡히는 현재 폰의 위치

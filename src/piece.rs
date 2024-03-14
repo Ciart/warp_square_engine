@@ -167,7 +167,7 @@ impl Piece {
                 if *is_empty {
                     // 앙파상 체크
                     if let Some(en_passant) = &board.en_passant {
-                        if *square == en_passant.position {
+                        if *square == en_passant.position.remove_level() {
                             attacks[*board_type] |= *square;
                         }
                     }
