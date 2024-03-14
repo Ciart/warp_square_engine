@@ -4,14 +4,15 @@ use crate::{
     board_type::BoardType,
     color_mask::ColorMask,
     piece::{Piece, PieceType},
-    square::{Color, Level},
+    square::{Color, File, Level, Rank, Square},
 };
 
 /// 앙파상 처리를 위한 구조체
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct EnPassant {
-    // 앙파상으로 잡히는 이전 턴 폰의 위치
-    pub old_square: BitBoard,
+    /// 잡는 폰이 갈 수 있는 위치
+    /// Level 값이 존재하면 안 된다.
+    pub position: BitBoard,
 
     // 앙파상으로 잡히는 현재 폰의 위치
     pub new_square: BitBoard,
@@ -366,9 +367,9 @@ impl Board {
         todo!()
     }
 
-    pub fn set_en_passant(&mut self, old_square: BitBoard, new_square: BitBoard) {
+    pub fn set_en_passant(&mut self, position: BitBoard, new_square: BitBoard) {
         self.en_passant = Some(EnPassant {
-            old_square,
+            position,
             new_square,
         });
     }

@@ -231,8 +231,8 @@ mod single_function_unit_test {
         let _ = test_game.push_move(piece_move);
 
         let legal_piece_move = PieceMove::new(
-            Square::new(Rank::Six, File::C, Level::Black),
-            Square::new(Rank::Seven, File::B, Level::Black),
+            Square::new(Rank::Five, File::C, Level::Black),
+            Square::new(Rank::Six, File::B, Level::Black),
             None
         );
 
@@ -241,7 +241,7 @@ mod single_function_unit_test {
 
     #[test]
     fn castling() {
-        let test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R12/q62r1/k1KR2/k62k1".to_string());
+        let test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R3/q62r1/k1KR2/k62kr".to_string());
         test_game.print_sandbox();
 
         test_game.get_attack_squares(&Square::new(Rank::Zero, File::D, Level::KL1))
