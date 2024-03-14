@@ -328,7 +328,7 @@ impl Piece {
                     // 퀸 사이드 캐슬링
                     if let Some(left_piece) = board.get_piece(BitBoard::Z0 | BitBoard::QL1) {
                         let is_between_empty = !board.occupied_piece.union()[BoardType::WhiteQueen]
-                            .contains(BitBoard::A0 | BitBoard::B0 | BitBoard::C0);
+                            .contains(BitBoard::D0);
 
                         if !left_piece.is_moved && is_between_empty {
                             attacks[BoardType::WhiteQueen] |= BitBoard::A0;
@@ -346,7 +346,7 @@ impl Piece {
                     // 퀸 사이드 캐슬링
                     if let Some(left_piece) = board.get_piece(BitBoard::Z9 | BitBoard::QL6) {
                         let is_between_empty = !board.occupied_piece.union()[BoardType::BlackQueen]
-                            .contains(BitBoard::A9 | BitBoard::B9 | BitBoard::C9);
+                            .contains(BitBoard::D9);
 
                         if !left_piece.is_moved && is_between_empty {
                             attacks[BoardType::BlackQueen] |= BitBoard::A9;
