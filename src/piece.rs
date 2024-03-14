@@ -165,17 +165,9 @@ impl Piece {
 
             for (board_type, square, is_empty) in &empty_boards {
                 if *is_empty {
+                    // 앙파상 체크
                     if let Some(en_passant) = &board.en_passant {
-                        // 앙파상 보드 타입 확인
-                        if *board_type
-                            != board
-                                .convert_board_type(en_passant.old_square.get_level())
-                                .unwrap()
-                        {
-                            break;
-                        }
-
-                        if *square == en_passant.old_square.remove_level() {
+                        if *square == en_passant.position.remove_level() {
                             attacks[*board_type] |= *square;
                         }
                     }
@@ -336,7 +328,7 @@ impl Piece {
                     // 퀸 사이드 캐슬링
                     if let Some(left_piece) = board.get_piece(BitBoard::Z0 | BitBoard::QL1) {
                         let is_between_empty = !board.occupied_piece.union()[BoardType::WhiteQueen]
-                            .contains(BitBoard::A0);
+                            .contains(BitBoard::D0);
 
                         if !left_piece.is_moved && is_between_empty {
                             attacks[BoardType::WhiteQueen] |= BitBoard::A0;
@@ -354,7 +346,7 @@ impl Piece {
                     // 퀸 사이드 캐슬링
                     if let Some(left_piece) = board.get_piece(BitBoard::Z9 | BitBoard::QL6) {
                         let is_between_empty = !board.occupied_piece.union()[BoardType::BlackQueen]
-                            .contains(BitBoard::A9);
+                            .contains(BitBoard::D9);
 
                         if !left_piece.is_moved && is_between_empty {
                             attacks[BoardType::BlackQueen] |= BitBoard::A9;

@@ -99,7 +99,7 @@ impl PieceMove {
         }
 
         if let Some(en_passant) = &board.en_passant {
-            if en_passant.old_square == destination {
+            if destination == en_passant.position {
                 return true;
             }
         }
@@ -153,7 +153,12 @@ impl PieceMove {
             None => return false,
         };
 
-        let destination_piece = match board.get_piece(destination) {
+        let rook_square = match source_piece.color {
+            Color::White => BitBoard::Z0 | BitBoard::QL1,
+            Color::Black => BitBoard::Z9 | BitBoard::QL6,
+        };
+
+        let destination_piece = match board.get_piece(rook_square) {
             Some(piece) => piece,
             None => return false,
         };
@@ -204,8 +209,8 @@ impl ChessMove for PieceMove {
 
         // 앙파상 확인을 위해 변수 업데이트
         if let Some(piece) = board.get_piece(source) {
-            if piece.piece_type == PieceType::Pawn && source.rank_distance(&destination) == 2 {
-                board.set_en_passant(source, destination)
+            if piece.piece_type == PieceType::Pawn && source.rank_distance(&destination) == 2 && self.destination.level.is_main() {
+                board.set_en_passant(destination.backward(piece.color) | self.destination.level.into_bit_board(), destination)
             } else {
                 board.remove_en_passant();
             }
@@ -224,16 +229,24 @@ impl ChessMove for PieceMove {
             }
         } else if self.is_queen_side_castling(board) {
             match board.turn {
-                Color::White => {
-                    board.swap_piece(BitBoard::D0 | BitBoard::KL1, BitBoard::Z0 | BitBoard::QL1).and_then(|_| {
-                        board.move_piece(BitBoard::Z0 | BitBoard::QL1, BitBoard::A0 | BitBoard::QL1, None)
-                    })
-                }
-                Color::Black => {
-                    board.swap_piece(BitBoard::D9 | BitBoard::KL6, BitBoard::Z9 | BitBoard::QL6).and_then(|_| {
-                        board.move_piece(BitBoard::Z9 | BitBoard::QL6, BitBoard::A9 | BitBoard::QL6, None)
-                    })
-                }
+                Color::White => board
+                    .swap_piece(BitBoard::D0 | BitBoard::KL1, BitBoard::Z0 | BitBoard::QL1)
+                    .and_then(|_| {
+                        board.move_piece(
+                            BitBoard::Z0 | BitBoard::QL1,
+                            BitBoard::A0 | BitBoard::QL1,
+                            None,
+                        )
+                    }),
+                Color::Black => board
+                    .swap_piece(BitBoard::D9 | BitBoard::KL6, BitBoard::Z9 | BitBoard::QL6)
+                    .and_then(|_| {
+                        board.move_piece(
+                            BitBoard::Z9 | BitBoard::QL6,
+                            BitBoard::A9 | BitBoard::QL6,
+                            None,
+                        )
+                    }),
             }
         } else {
             board.move_piece(source, destination, self.promotion)
