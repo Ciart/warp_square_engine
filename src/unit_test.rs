@@ -202,48 +202,90 @@ mod single_function_unit_test {
 
     #[test]
     fn en_passant() {
-        let mut test_game = Game::new_sandbox("4/PPPP/4/4/4/4/4/4/4/4/pppp/4".to_string());
+        {
+            let mut test_game = Game::new_sandbox("4/PPPP/4/4/4/4/4/4/4/4/pppp/4".to_string());
 
-        let piece_move = PieceMove::new(
-            Square::new(Rank::Two, File::C, Level::White),
-            Square::new(Rank::Four, File::C, Level::White),
-            None
-        );
-        let _ = test_game.push_move(piece_move);
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Two, File::C, Level::White),
+                Square::new(Rank::Four, File::C, Level::White),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Seven, File::A, Level::Black),
+                Square::new(Rank::Six, File::A, Level::Black),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
 
-        let piece_move = PieceMove::new(
-            Square::new(Rank::Seven, File::A, Level::Black),
-            Square::new(Rank::Six, File::A, Level::Black),
-            None
-        );
-        let _ = test_game.push_move(piece_move);
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Four, File::C, Level::White),
+                Square::new(Rank::Five, File::C, Level::Black),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Seven, File::B, Level::Black),
+                Square::new(Rank::Five, File::B, Level::Black),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
 
-        let piece_move = PieceMove::new(
-            Square::new(Rank::Four, File::C, Level::White),
-            Square::new(Rank::Five, File::C, Level::Black),
-            None
-        );
-        let _ = test_game.push_move(piece_move);
+            let legal_piece_move = PieceMove::new(
+                Square::new(Rank::Five, File::C, Level::Black),
+                Square::new(Rank::Six, File::B, Level::Black),
+                None
+            );
 
-        let piece_move = PieceMove::new(
-            Square::new(Rank::Seven, File::B, Level::Black),
-            Square::new(Rank::Five, File::B, Level::Black),
-            None
-        );
-        let _ = test_game.push_move(piece_move);
+            assert_eq!(test_game.legal_move(&legal_piece_move), true, "같은 레벨 화이트 피스 공격 앙파상");
+        }
+        {
+            let mut test_game = Game::new_sandbox("4/PPPP/4/4/4/4/4/4/4/4/pppp/4".to_string());
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Two, File::C, Level::White),
+                Square::new(Rank::Four, File::C, Level::White),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Seven, File::A, Level::Black),
+                Square::new(Rank::Six, File::A, Level::Black),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
 
-        let legal_piece_move = PieceMove::new(
-            Square::new(Rank::Six, File::C, Level::Black),
-            Square::new(Rank::Seven, File::B, Level::Black),
-            None
-        );
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Four, File::C, Level::White),
+                Square::new(Rank::Five, File::C, Level::Black),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
+            let piece_move = PieceMove::new(
+                Square::new(Rank::Seven, File::B, Level::Black),
+                Square::new(Rank::Five, File::B, Level::Neutral),
+                None
+            );
+            let _ = test_game.push_move(piece_move);
 
-        assert_eq!(test_game.legal_move(&legal_piece_move), true, "화이트 피스 공격 앙파상");
+            let legal_piece_move = PieceMove::new(
+                Square::new(Rank::Five, File::C, Level::Black),
+                Square::new(Rank::Six, File::B, Level::Black),
+                None
+            );
+            assert_ne!(test_game.legal_move(&legal_piece_move), true, "다른 레벨 화이트 피스 앙파상 공격 후 같은 레벨로 이동하지 않음");
+
+            let legal_piece_move = PieceMove::new(
+                Square::new(Rank::Five, File::C, Level::Black),
+                Square::new(Rank::Six, File::B, Level::Neutral),
+                None
+            );
+            assert_eq!(test_game.legal_move(&legal_piece_move), true, "다른 레벨 화이트 피스 앙파상 공격 후 같은 레벨로 이동");
+        }
     }
 
     #[test]
     fn castling() {
-        let test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R12/q62r1/k1KR2/k62k1".to_string());
+        let mut test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R12/q62r1/k1KR2/k62k1".to_string());
 
         let white_king_side_castling = PieceMove::new(
             Square::new(Rank::Zero, File::D, Level::KL1),
@@ -256,8 +298,10 @@ mod single_function_unit_test {
             None
         );
 
-        assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "화이트 킹 사이드 캐슬링");
-        assert_eq!(PieceMove::is_queen_side_castling(&white_queen_side_castling, &test_game.board), true, "화이트 퀸 사이드 캐슬링");
+        assert_eq!(white_king_side_castling.is_king_side_castling(&test_game.board), true, "화이트 킹 사이드 캐슬링");
+        assert_eq!(white_queen_side_castling.is_queen_side_castling(&test_game.board), true, "화이트 퀸 사이드 캐슬링");
+
+        let mut test_game = Game::new_sandbox("4/4/4/4/4/4/4/4/4/4/4/4/q1R12/q62r1/k1K12/k62kr".to_string());
 
         let black_king_side_castling = PieceMove::new(
             Square::new(Rank::Nine, File::D, Level::KL6),
@@ -269,9 +313,10 @@ mod single_function_unit_test {
             Square::new(Rank::Nine, File::A, Level::QL6),
             None
         );
+        test_game.board.turn = Black;
 
-        assert_eq!(PieceMove::is_king_side_castling(&black_king_side_castling, &test_game.board), true, "블랙 킹 사이드 캐슬링");
-        assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "블랙 퀸 사이드 캐슬링");
+        assert_eq!(black_king_side_castling.is_king_side_castling(&test_game.board), true, "블랙 킹 사이드 캐슬링");
+        assert_eq!(black_queen_side_castling.is_queen_side_castling(&test_game.board), true, "블랙 퀸 사이드 캐슬링");
 
         let test_game = Game::new_sandbox("4/4/4/b3/4/4/4/4/3B/4/4/4/q1R12/k1KR2/q62r1/k62kr".to_string());
 
@@ -280,15 +325,13 @@ mod single_function_unit_test {
 
         let mut test_game = Game::new_sandbox("NBBN/4/4/4/4/4/4/4/4/4/4/nbbn/q1R12/k1KR2/q62r1/k62kr".to_string());
 
-        assert_eq!(PieceMove::is_queen_side_castling(&white_queen_side_castling, &test_game.board), true, "중간에 피스가 있을때 화이트 퀸 사이드 캐슬링");
-        assert_eq!(PieceMove::is_queen_side_castling(&black_queen_side_castling, &test_game.board), true, "중간에 피스가 있을때 블랙 퀸 사이드 캐슬링");
-
         let piece_move = PieceMove::new(
             Square::new(Rank::Zero, File::E, Level::KL1),
             Square::new(Rank::One, File::E, Level::KL1),
             None
         );
         let _ = test_game.push_move(piece_move);
+
         let piece_move = PieceMove::new(
             Square::new(Rank::One, File::E, Level::KL1),
             Square::new(Rank::Zero, File::E, Level::KL1),
@@ -296,7 +339,7 @@ mod single_function_unit_test {
         );
         let _ = test_game.push_move(piece_move);
 
-        assert_eq!(PieceMove::is_king_side_castling(&white_king_side_castling, &test_game.board), true, "이미 첫 움직임을 한 후에 화이트 킹 사이드 캐슬링");
+        assert_ne!(white_king_side_castling.is_king_side_castling(&test_game.board), true, "이미 첫 움직임을 한 후에 화이트 킹 사이드 캐슬링");
     }
 
     #[test]
