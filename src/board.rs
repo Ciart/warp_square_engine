@@ -17,6 +17,7 @@ pub struct EnPassant {
     pub new_square: BitBoard,
 }
 
+#[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct BoardSnapshot {
     turn: Color,
     full_move_number: u32,

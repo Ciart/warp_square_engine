@@ -10,7 +10,7 @@ use crate::square::{File, Level};
 
 pub struct Game {
     pub board: Board,
-    pub move_stack: Vec<(Box<dyn ChessMove>, BoardSnapshot)>,
+    pub move_stack: Vec<(Box<dyn ChessMove + Send + 'static>, BoardSnapshot)>,
 }
 
 impl Game {
@@ -154,7 +154,7 @@ impl Game {
 
     pub fn legal_move(&self, chess_move: &impl ChessMove) -> bool { chess_move.legal(&self.board) }
 
-    pub fn push_move(&mut self, chess_move: impl ChessMove + 'static) -> Result<(), &'static str> {
+    pub fn push_move(&mut self, chess_move: impl ChessMove + Send + 'static) -> Result<(), &'static str> {
         let snapshot = BoardSnapshot::new(&self.board);
 
         if self.board.turn == Color::Black {
