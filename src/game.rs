@@ -152,9 +152,7 @@ impl Game {
         piece.get_attack_squares(&self.board)
     }
 
-    pub fn legal_move(&self, chess_move: &impl ChessMove) -> bool {
-        chess_move.legal(&self.board)
-    }
+    pub fn legal_move(&self, chess_move: &impl ChessMove) -> bool { chess_move.legal(&self.board) }
 
     pub fn push_move(&mut self, chess_move: impl ChessMove + Send + 'static) -> Result<(), &'static str> {
         let snapshot = BoardSnapshot::new(&self.board);
@@ -343,18 +341,18 @@ impl Game {
                     level_count += 1;
                     let board_index = 2 + level_count;
                     bitboard_level = match init_sub_board[level_count - 1] {
-                        "q1" | "Q1" => { sandbox.board.board_set[board_index] = (BoardType::WhiteQueen, Level::QL1); BitBoard::QL1 },
-                        "q2" | "Q2" => { sandbox.board.board_set[board_index] = (BoardType::WhiteQueen, Level::QL2); BitBoard::QL2 },
-                        "q3" | "Q3" => { sandbox.board.board_set[board_index] = (BoardType::Neutral, Level::QL3); BitBoard::QL3 },
-                        "q4" | "Q4" => { sandbox.board.board_set[board_index] = (BoardType::Neutral, Level::QL4); BitBoard::QL4 },
-                        "q5" | "Q5" => { sandbox.board.board_set[board_index] = (BoardType::BlackQueen, Level::QL5); BitBoard::QL5},
-                        "q6" | "Q6" => { sandbox.board.board_set[board_index] = (BoardType::BlackQueen, Level::QL6); BitBoard::QL6 },
-                        "k1" | "K1" => { sandbox.board.board_set[board_index] = (BoardType::WhiteKing, Level::KL1); BitBoard::KL1 },
-                        "k2" | "K2" => { sandbox.board.board_set[board_index] = (BoardType::WhiteKing, Level::KL2); BitBoard::KL2 },
-                        "k3" | "K3" => { sandbox.board.board_set[board_index] = (BoardType::Neutral, Level::KL3); BitBoard::KL3 },
-                        "k4" | "K4" => { sandbox.board.board_set[board_index] = (BoardType::Neutral, Level::KL4); BitBoard::KL4 },
-                        "k5" | "K5" => { sandbox.board.board_set[board_index] = (BoardType::BlackKing, Level::KL5); BitBoard::KL5 },
-                        "k6" | "K6" => { sandbox.board.board_set[board_index] = (BoardType::BlackKing, Level::KL6); BitBoard::KL6 },
+                        "q1" | "Q1" => { sandbox.board.board_set[board_index].1 = Level::QL1; BitBoard::QL1 },
+                        "q2" | "Q2" => { sandbox.board.board_set[board_index].1 = Level::QL2; BitBoard::QL2 },
+                        "q3" | "Q3" => { sandbox.board.board_set[board_index].1 = Level::QL3; BitBoard::QL3 },
+                        "q4" | "Q4" => { sandbox.board.board_set[board_index].1 = Level::QL4; BitBoard::QL4 },
+                        "q5" | "Q5" => { sandbox.board.board_set[board_index].1 = Level::QL5; BitBoard::QL5},
+                        "q6" | "Q6" => { sandbox.board.board_set[board_index].1 = Level::QL6; BitBoard::QL6 },
+                        "k1" | "K1" => { sandbox.board.board_set[board_index].1 = Level::KL1; BitBoard::KL1 },
+                        "k2" | "K2" => { sandbox.board.board_set[board_index].1 = Level::KL2; BitBoard::KL2 },
+                        "k3" | "K3" => { sandbox.board.board_set[board_index].1 = Level::KL3; BitBoard::KL3 },
+                        "k4" | "K4" => { sandbox.board.board_set[board_index].1 = Level::KL4; BitBoard::KL4 },
+                        "k5" | "K5" => { sandbox.board.board_set[board_index].1 = Level::KL5; BitBoard::KL5 },
+                        "k6" | "K6" => { sandbox.board.board_set[board_index].1 = Level::KL6; BitBoard::KL6 },
                         _ =>  BitBoard::empty()
                     }
                 }
@@ -581,40 +579,3 @@ pub const VOID_STR_SUB_LEVEL_VEC : [&str; 12] = [
     "k1", "k2", "k3", "k4", "k5", "k6",
 ];
 pub const VOID_CHAR_VEC: [char; 4] = ['1', '2', '3', '4'];
-
-#[cfg(test)]
-mod a {
-    use crate::chess_move::{BoardMove, PieceMove};
-    use super::*;
-
-    #[test]
-    fn test_legal() {
-        let mut game = Game::new();
-
-        game.get_attack_squares(&Square::new(Rank::One, File::A, Level::White))
-            .iter()
-            .for_each(|x| println!("{:?}", x));
-
-        let piece_move = PieceMove::new(
-            Square::new(Rank::One, File::A, Level::White),
-            Square::new(Rank::Nine, File::B, Level::White),
-            None,
-        );
-
-        /*if game.legal_move(&piece_move) {
-            let _ = game.push_move(piece_move);
-        }*/
-
-        assert!(game.legal_move(&piece_move), "temp");
-
-
-        // 움직임
-        // err 경우랑 알맞은 경우 에 따른 테스트 별도 필요
-
-        /*/*let _ = game.push_move(BoardMove::new(Level::QL1, Level::QL2, None));
-
-        println!("{}", BitBoard::A2.rank_distance(&BitBoard::B3));*/
-
-        game.print();*/
-    }
-}

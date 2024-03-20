@@ -262,10 +262,11 @@ impl BitBoard {
     }
 
     pub fn rank_distance(&self, other: &Self) -> u8 {
-        self.bits()
-            .trailing_zeros()
-            .abs_diff(other.bits().trailing_zeros()) as u8
-            % NUM_RANKS
+        (self.get_rank() as u8).abs_diff(other.get_rank() as u8)
+    }
+
+    pub fn file_distance(&self, other: &Self) -> u8 {
+        (self.get_file() as u8).abs_diff(other.get_file() as u8)
     }
 
     pub fn get_rank(&self) -> Rank {
