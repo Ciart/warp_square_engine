@@ -362,9 +362,15 @@ impl Board {
 
         true
     }
-
+    
     pub fn is_stalemate(&self) -> bool {
-        todo!()
+        self.pieces.iter().all(|piece| {
+            if piece.color != self.turn {
+                return true;
+            } else {
+                piece.attacks.iter().all(|attacks| attacks.is_empty())
+            }
+        })
     }
 
     pub fn set_en_passant(&mut self, position: BitBoard, new_square: BitBoard) {

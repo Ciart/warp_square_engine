@@ -232,6 +232,9 @@ foreign_class!(class Game {
     fn Game::isCheckmate(&self) -> bool {
         this.board.is_checkmate()
     }
+    fn Game::isStalemate(&self) -> bool {
+        this.board.is_stalemate()
+    }
     fn Game::isPromotion(&self, pieceMove: PieceMove) -> bool {
         pieceMove.is_promotion(&this.board)
     }
