@@ -419,7 +419,8 @@ mod single_function_unit_test {
 
     #[test]
     fn checkmate() {
-        let mut test_game = Game::new_sandbox("PPKP/PP1P/2q1/4/4/4/4/4/4/1Q2/p1pp/pkpp/q222/k222/q522/k522".to_string());
+        let mut test_game = Game::new_sandbox("PPKP/PP1P/2q1/4/PPPP/PPPP/PPPP/PPPP/4/1Q2/p1pp/pkpp/q222/k222/q522/k522".to_string());
+
         test_game.print_sandbox();
 
         assert_eq!(test_game.board.is_checkmate(), true, "화이트 체크 메이트");
