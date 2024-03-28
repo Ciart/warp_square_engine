@@ -197,17 +197,14 @@ foreign_class!(class Game {
     fn Game::legalBoardMove(&self, boardMove: &BoardMove) -> bool {
         this.legal_move(boardMove)
     }
-    fn Game::pushPieceMove(&mut self, pieceMove: PieceMove) -> Result<(), &'static str> {
+    fn Game::pushPieceMove(&mut self, pieceMove: PieceMove) -> bool {
         this.push_move(pieceMove)
     }
-    fn Game::pushBoardMove(&mut self, boardMove: BoardMove) -> Result<(), &'static str> {
+    fn Game::pushBoardMove(&mut self, boardMove: BoardMove) -> bool {
         this.push_move(boardMove)
     }
-    fn Game::popMove(&mut self, boardMove: BoardMove) -> Result<(), &'static str> {
-        match this.pop_move() {
-            Ok(chess_move) => Ok(()),
-            Err(e) => Err(e),
-        }
+    fn Game::popMove(&mut self, boardMove: BoardMove) -> bool {
+        this.pop_move()
     }
     fn Game::print(&self);
     fn Game::getTurn(&self) -> Color {
