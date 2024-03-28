@@ -166,14 +166,14 @@ foreign_class!(class Game {
     fn Game::legalBoardMove(&self, boardMove: &BoardMove) -> bool {
         this.legal_move(boardMove)
     }
-    fn Game::pushPieceMove(&mut self, pieceMove: &PieceMove) {
-        let _ = this.push_move(pieceMove.clone());
+    fn Game::pushPieceMove(&mut self, pieceMove: &PieceMove) -> bool {
+        let _ = this.push_move(pieceMove.clone())
     }
-    fn Game::pushBoardMove(&mut self, boardMove: &BoardMove) {
-        let _ = this.push_move(boardMove.clone());
+    fn Game::pushBoardMove(&mut self, boardMove: &BoardMove) -> bool {
+        let _ = this.push_move(boardMove.clone())
     }
-    fn Game::popMove(&mut self) {
-        let _ = this.pop_move();
+    fn Game::popMove(&mut self) -> bool {
+        let _ = this.pop_move()
     }
     fn Game::print(&self);
     fn Game::getTurn(&self) -> Color {

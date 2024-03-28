@@ -32,6 +32,7 @@ impl Piece {
 }
 
 #[pyclass]
+#[pyo3(name = "PieceMove")]
 struct PyPieceMove(PieceMove);
 
 #[pymethods]
@@ -55,6 +56,7 @@ impl PyPieceMove {
 }
 
 #[pyclass]
+#[pyo3(name = "BoardMove")]
 struct PyBoardMove(BoardMove);
 
 #[pymethods]
@@ -78,6 +80,7 @@ impl PyBoardMove {
 }
 
 #[pyclass]
+#[pyo3(name = "Square")]
 struct PySquare(Square);
 
 #[pymethods]
@@ -122,18 +125,16 @@ impl Game {
         self.0.legal_move(&board_move.0)
     }
 
-    // TODO: 리턴 값 추가
-    fn push_piece_move(&mut self, piece_move: &PyPieceMove) {
-        let _ = self.0.push_move(piece_move.0.clone());
+    fn push_piece_move(&mut self, piece_move: &PyPieceMove) -> bool {
+        self.0.push_move(piece_move.0.clone())
     }
 
-    // TODO: 리턴 값 추가
-    fn push_board_move(&mut self, board_move: &PyBoardMove) {
-        let _ = self.0.push_move(board_move.0.clone());
+    fn push_board_move(&mut self, board_move: &PyBoardMove) -> bool {
+        self.0.push_move(board_move.0.clone())
     }
 
-    fn pop_move(&mut self) {
-        let _ = self.0.pop_move();
+    fn pop_move(&mut self) -> bool {
+        self.0.pop_move()
     }
 
     fn print(&self) {
