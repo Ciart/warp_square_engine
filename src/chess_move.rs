@@ -270,7 +270,7 @@ impl ChessMove for PieceMove {
             return false;
         }
 
-        let board_type = match board_set.convert_board_type(self.destination.level) {
+        let board_type = match board_set.get_board_type(self.destination.level) {
             Some(board_type) => board_type,
             None => return false,
         };
@@ -321,21 +321,22 @@ impl ChessMove for BoardMove {
         }
 
         // 이동할 보드가 없는 경우
-        if board_set.convert_board_type(self.source).is_none() {
+        if board_set.get_board_type(self.source).is_none() {
             return false;
         }
 
         // 도착지에 이미 보드가 있는 경우
-        if board_set.convert_board_type(self.destination).is_some() {
+        if board_set.get_board_type(self.destination).is_some() {
             return false;
         }
 
         // 이동할 수 있는 레벨인지 확인
-        if self.source.get_moveable_list().contains(&self.destination) {
+        if !self.source.get_moveable_list().contains(&self.destination) {
             return false;
         }
 
         // 기물 1개 이하 존재해야만 움직일 수 있으며 기물의 색깔과 턴이 일치해야 한다.
+        // 기물은 폰이어야 한다. 폰이 아닌 경우에는 움직일 수 없다.
         // 빈 어택보드는 누구나 움직일 수 있다.
         let mut source_pieces = board_set
             .pieces
@@ -344,7 +345,11 @@ impl ChessMove for BoardMove {
 
         let is_can_move = match source_pieces.clone().count() {
             0 => true,
-            1 => source_pieces.next().unwrap().color == board_set.turn,
+            1 => {
+                let piece = source_pieces.next().unwrap();
+                
+                piece.color == board_set.turn && piece.piece_type == PieceType::Pawn
+            },
             _ => false,
         };
 

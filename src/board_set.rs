@@ -96,7 +96,7 @@ impl BoardSet {
         }
     }
 
-    pub fn convert_board_type(&self, level: Level) -> Option<BoardType> {
+    pub fn get_board_type(&self, level: Level) -> Option<BoardType> {
         match level {
             Level::White => Some(BoardType::White),
             Level::Neutral => Some(BoardType::Neutral),
@@ -108,7 +108,7 @@ impl BoardSet {
         }
     }
 
-    pub fn convert_level(&self, board_type: BoardType) -> Level {
+    pub fn get_board_level(&self, board_type: BoardType) -> Level {
         self.boards[board_type as usize].level
     }
 
@@ -128,7 +128,7 @@ impl BoardSet {
         };
 
         for board_type in BoardType::iter() {
-            let level = self.convert_level(board_type);
+            let level = self.get_board_level(board_type);
 
             for square in squares.iter() {
                 let is_void = !level.get_area().contains(square);
@@ -150,6 +150,13 @@ impl BoardSet {
 
     pub fn get_piece(&self, square: BitBoard) -> Option<&Piece> {
         self.pieces.iter().find(|piece| piece.position == square)
+    }
+
+    pub fn get_pieces_with_board_type(&self, board_type: BoardType) -> Vec<&Piece> {
+        self.pieces
+            .iter()
+            .filter(|piece| self.get_board_type(piece.position.get_level()) == Some(board_type))
+            .collect()
     }
 
     pub fn remove_piece(&mut self, square: BitBoard) -> Option<Piece> {
@@ -283,11 +290,11 @@ impl BoardSet {
         self.occupied_piece = ColorMask::new();
 
         for board_type in BoardType::iter() {
-            self.occupied_void[board_type] = !self.convert_level(board_type).get_area();
+            self.occupied_void[board_type] = !self.get_board_level(board_type).get_area();
         }
 
         for piece in self.pieces.iter() {
-            match self.convert_board_type(piece.position.get_level()) {
+            match self.get_board_type(piece.position.get_level()) {
                 Some(board_type) => {
                     self.occupied_piece[piece.color][board_type] |= piece.position.remove_level();
                 }
@@ -320,7 +327,7 @@ impl BoardSet {
             None => return false,
         };
 
-        let king_board = self.convert_board_type(king.position.get_level()).unwrap();
+        let king_board = self.get_board_type(king.position.get_level()).unwrap();
         let king_position = king.position.remove_level();
 
         for piece in &self.pieces {

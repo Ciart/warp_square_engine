@@ -1,10 +1,9 @@
 #[cfg(test)]
 mod single_function_unit_test {
     use crate::bit_board::BitBoard;
-    use crate::board_set::BoardSet;
     use crate::chess_move::{BoardMove, PieceMove};
     use crate::game::Game;
-    use crate::piece::{Piece, PieceType};
+    use crate::piece::PieceType;
     use crate::square::{Color, File, Level, Rank, Square};
     use crate::square::Color::Black;
 
@@ -12,10 +11,7 @@ mod single_function_unit_test {
     fn check_turn_pass() {
         let mut test_game = Game::new_sandbox("4/3P/4/4/4/4/4/4/4/4/p3/4/q1P12/q622/k1p12/k622".to_string());
 
-        assert_eq!( match test_game.board_set.turn {
-            Color::White => true,
-            _ => false
-        }, true, "첫 화이트 턴 체크");
+        assert_eq!(test_game.board_set.turn, Color::White, "첫 화이트 턴 체크");
 
         let legal_piece_move = PieceMove::new(
             Square::new(Rank::Two, File::D, Level::White),
@@ -35,10 +31,7 @@ mod single_function_unit_test {
 
         let _ = test_game.push_move(legal_piece_move);
 
-        assert_eq!( match test_game.board_set.turn {
-            Color::Black => true,
-            _ => false
-        }, true, "두번째 블랙 턴 체크");
+        assert_eq!(test_game.board_set.turn, Color::Black, "두번째 블랙 턴 체크");
 
         let legal_piece_move = PieceMove::new(
             Square::new(Rank::Seven, File::A, Level::Black),

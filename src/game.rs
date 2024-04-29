@@ -141,7 +141,7 @@ impl Game {
     }
 
     fn pass_turn(&mut self) {
-        let _ = self.board_set.turn != self.board_set.turn;
+        self.board_set.turn = !self.board_set.turn;
     }
 
     pub fn get_attack_squares(&self, square: &Square) -> Vec<Square> {

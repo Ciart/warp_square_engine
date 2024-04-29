@@ -3,6 +3,7 @@ use pyo3::pyclass;
 use crate::{
     bit_board::BitBoard,
     bit_board_set::BitBoardSet,
+    board,
     board_set::BoardSet,
     board_type::BoardType,
     square::{Color, Rank, Square},
@@ -78,7 +79,8 @@ impl Piece {
         for board_type in BoardType::iter() {
             for bit_square in self.attacks[board_type].iter() {
                 result.push(
-                    (bit_square | board_set.convert_level(board_type).into_bit_board()).into_square(),
+                    (bit_square | board_set.get_board_level(board_type).into_bit_board())
+                        .into_square(),
                 );
             }
         }
@@ -164,15 +166,21 @@ impl Piece {
             let empty_boards = board_set.get_empty_squares(destination, Some(self.color));
 
             for (board_type, square, is_empty) in &empty_boards {
-                if *is_empty {
-                    // 앙파상 체크
-                    if let Some(en_passant) = &board_set.en_passant {
-                        if *square == en_passant.position.remove_level() {
-                            attacks[*board_type] |= *square;
-                        }
-                    }
-                } else {
+                if !*is_empty {
                     attacks[*board_type] |= *square;
+                }
+            }
+
+            // 앙파상 체크
+            if let Some(en_passant) = &board_set.en_passant {
+                let en_passant_level = en_passant.position.get_level();
+
+                if let Some(board_type) = board_set.get_board_type(en_passant_level) {
+                    let en_passant_position = en_passant.position.remove_level();
+
+                    if destination.contains(en_passant_position) {
+                        attacks[board_type] |= en_passant_position;
+                    }
                 }
             }
         }
@@ -327,7 +335,8 @@ impl Piece {
 
                     // 퀸 사이드 캐슬링
                     if let Some(left_piece) = board_set.get_piece(BitBoard::Z0 | BitBoard::QL1) {
-                        let is_between_empty = !board_set.occupied_piece.union()[BoardType::WhiteQueen]
+                        let is_between_empty = !board_set.occupied_piece.union()
+                            [BoardType::WhiteQueen]
                             .contains(BitBoard::D0);
 
                         if !left_piece.is_moved && is_between_empty {
@@ -345,7 +354,8 @@ impl Piece {
 
                     // 퀸 사이드 캐슬링
                     if let Some(left_piece) = board_set.get_piece(BitBoard::Z9 | BitBoard::QL6) {
-                        let is_between_empty = !board_set.occupied_piece.union()[BoardType::BlackQueen]
+                        let is_between_empty = !board_set.occupied_piece.union()
+                            [BoardType::BlackQueen]
                             .contains(BitBoard::D9);
 
                         if !left_piece.is_moved && is_between_empty {
