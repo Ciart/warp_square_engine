@@ -1,4 +1,4 @@
-use std::{mem::transmute, ops::Not};
+use std::{collections::HashMap, mem::transmute, ops::Not};
 
 use pyo3::pyclass;
 
@@ -110,6 +110,53 @@ impl Level {
             Level::KL4 => BitBoard::KL4_SET,
             Level::KL5 => BitBoard::KL5_SET,
             Level::KL6 => BitBoard::KL6_SET,
+        }
+    }
+
+    pub fn get_moveable_list(&self) -> Vec<Level> {
+        // TODO: const 배열로 변경해야 함
+        let level_map: HashMap<Level, Vec<Level>> = HashMap::from([
+            (Level::QL1, vec![Level::QL2, Level::QL3, Level::KL1]),
+            (
+                Level::QL2,
+                vec![Level::QL1, Level::QL3, Level::QL4, Level::KL2],
+            ),
+            (
+                Level::QL3,
+                vec![Level::QL1, Level::QL2, Level::QL4, Level::QL5, Level::KL3],
+            ),
+            (
+                Level::QL4,
+                vec![Level::QL2, Level::QL3, Level::QL5, Level::QL6, Level::KL4],
+            ),
+            (
+                Level::QL5,
+                vec![Level::QL3, Level::QL4, Level::QL6, Level::KL5],
+            ),
+            (Level::QL6, vec![Level::QL4, Level::QL5, Level::KL6]),
+            (Level::KL1, vec![Level::KL2, Level::KL3, Level::QL1]),
+            (
+                Level::KL2,
+                vec![Level::KL1, Level::KL3, Level::KL4, Level::QL2],
+            ),
+            (
+                Level::KL3,
+                vec![Level::KL1, Level::KL2, Level::KL4, Level::KL5, Level::QL3],
+            ),
+            (
+                Level::KL4,
+                vec![Level::KL2, Level::KL3, Level::KL5, Level::KL6, Level::QL4],
+            ),
+            (
+                Level::KL5,
+                vec![Level::KL3, Level::KL4, Level::KL6, Level::QL5],
+            ),
+            (Level::KL6, vec![Level::KL4, Level::KL5, Level::QL6]),
+        ]);
+
+        match level_map.get(self) {
+            Some(list) => list.to_vec(),
+            None => Vec::new(),
         }
     }
 

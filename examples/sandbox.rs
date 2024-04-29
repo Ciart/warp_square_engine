@@ -26,8 +26,8 @@ fn show_readme() {
 }
 
 fn init_selection() -> String {
-    let first_selection = String::from("Init board by user input");
-    let second_selection = String::from("Init board by selectable options");
+    let first_selection = String::from("Init board set by user input");
+    let second_selection = String::from("Init board set by selectable options");
     let third_selection = String::from("Exit");
 
     println!("Let's Start SandBox mode!");

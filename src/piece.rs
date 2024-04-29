@@ -3,7 +3,7 @@ use pyo3::pyclass;
 use crate::{
     bit_board::BitBoard,
     bit_board_set::BitBoardSet,
-    board::Board,
+    board_set::BoardSet,
     board_type::BoardType,
     square::{Color, Rank, Square},
 };
@@ -72,13 +72,13 @@ impl Piece {
         self.piece_type.get_char(self.color)
     }
 
-    pub fn get_attack_squares(&self, board: &Board) -> Vec<Square> {
+    pub fn get_attack_squares(&self, board_set: &BoardSet) -> Vec<Square> {
         let mut result = Vec::new();
 
         for board_type in BoardType::iter() {
             for bit_square in self.attacks[board_type].iter() {
                 result.push(
-                    (bit_square | board.convert_level(board_type).into_bit_board()).into_square(),
+                    (bit_square | board_set.convert_level(board_type).into_bit_board()).into_square(),
                 );
             }
         }
@@ -86,13 +86,13 @@ impl Piece {
         result
     }
 
-    pub fn compute_ray_occupied(board: &Board) -> BitBoard {
-        let occupied = (board.occupied_piece.union() | &board.occupied_void).intersection();
+    pub fn compute_ray_occupied(board_set: &BoardSet) -> BitBoard {
+        let occupied = (board_set.occupied_piece.union() | &board_set.occupied_void).intersection();
 
-        let board_area = board
-            .board_set
+        let board_area = board_set
+            .boards
             .iter()
-            .fold(BitBoard::EMPTY, |acc, (_, level)| acc | level.get_area());
+            .fold(BitBoard::EMPTY, |acc, board| acc | board.level.get_area());
 
         occupied & board_area
     }
@@ -122,20 +122,20 @@ impl Piece {
         self.position.get_rank() == end_rank
     }
 
-    pub fn update_attacks(&mut self, board: &Board) {
+    pub fn update_attacks(&mut self, board_set: &BoardSet) {
         self.attacks = match self.piece_type {
-            PieceType::Pawn => self.compute_pawn_attacks(board),
-            PieceType::Knight => self.compute_knight_attacks(board),
-            PieceType::Bishop => self.compute_bishop_attacks(board),
-            PieceType::Rook => self.compute_rook_attacks(board),
-            PieceType::Queen => self.compute_queen_attacks(board),
-            PieceType::King => self.compute_king_attacks(board),
+            PieceType::Pawn => self.compute_pawn_attacks(board_set),
+            PieceType::Knight => self.compute_knight_attacks(board_set),
+            PieceType::Bishop => self.compute_bishop_attacks(board_set),
+            PieceType::Rook => self.compute_rook_attacks(board_set),
+            PieceType::Queen => self.compute_queen_attacks(board_set),
+            PieceType::King => self.compute_king_attacks(board_set),
         };
     }
 
-    pub fn compute_pawn_attacks(&self, board: &Board) -> BitBoardSet {
+    pub fn compute_pawn_attacks(&self, board_set: &BoardSet) -> BitBoardSet {
         let position = self.position.remove_level();
-        let occupied = (board.occupied_piece.union() | &board.occupied_void).intersection();
+        let occupied = (board_set.occupied_piece.union() | &board_set.occupied_void).intersection();
 
         let mut attacks = BitBoardSet::new();
 
@@ -147,7 +147,7 @@ impl Piece {
                 destination |= destination.forward(self.color);
             }
 
-            let empty_boards = board.get_empty_squares(destination, None);
+            let empty_boards = board_set.get_empty_squares(destination, None);
 
             for (board_type, square, is_empty) in &empty_boards {
                 if *is_empty {
@@ -161,12 +161,12 @@ impl Piece {
             let destination =
                 position.forward_left(self.color) | position.forward_right(self.color);
 
-            let empty_boards = board.get_empty_squares(destination, Some(self.color));
+            let empty_boards = board_set.get_empty_squares(destination, Some(self.color));
 
             for (board_type, square, is_empty) in &empty_boards {
                 if *is_empty {
                     // 앙파상 체크
-                    if let Some(en_passant) = &board.en_passant {
+                    if let Some(en_passant) = &board_set.en_passant {
                         if *square == en_passant.position.remove_level() {
                             attacks[*board_type] |= *square;
                         }
@@ -180,7 +180,7 @@ impl Piece {
         attacks
     }
 
-    pub fn compute_knight_attacks(&self, board: &Board) -> BitBoardSet {
+    pub fn compute_knight_attacks(&self, board_set: &BoardSet) -> BitBoardSet {
         let position = self.position.remove_level();
 
         let mut attacks = BitBoardSet::new();
@@ -207,7 +207,7 @@ impl Piece {
         destination |=
             BitBoard::from_bits_retain(position.bits() << 21 & (!BitBoard::ZERO_RANKS).bits());
 
-        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
+        let empty_boards = board_set.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -218,9 +218,9 @@ impl Piece {
         attacks
     }
 
-    pub fn compute_bishop_attacks(&self, board: &Board) -> BitBoardSet {
+    pub fn compute_bishop_attacks(&self, board_set: &BoardSet) -> BitBoardSet {
         let position = self.position.remove_level();
-        let occupied = Self::compute_ray_occupied(board);
+        let occupied = Self::compute_ray_occupied(board_set);
 
         let mut attacks = BitBoardSet::new();
         let mut destination = BitBoard::EMPTY;
@@ -230,7 +230,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.up_left());
         destination |= position.ray(occupied, |current| current.up_right());
 
-        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
+        let empty_boards = board_set.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -241,9 +241,9 @@ impl Piece {
         attacks
     }
 
-    pub fn compute_rook_attacks(&self, board: &Board) -> BitBoardSet {
+    pub fn compute_rook_attacks(&self, board_set: &BoardSet) -> BitBoardSet {
         let position = self.position.remove_level();
-        let occupied = Self::compute_ray_occupied(board);
+        let occupied = Self::compute_ray_occupied(board_set);
 
         let mut attacks = BitBoardSet::new();
         let mut destination = BitBoard::EMPTY;
@@ -253,7 +253,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.left());
         destination |= position.ray(occupied, |current| current.right());
 
-        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
+        let empty_boards = board_set.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -264,9 +264,9 @@ impl Piece {
         attacks
     }
 
-    pub fn compute_queen_attacks(&self, board: &Board) -> BitBoardSet {
+    pub fn compute_queen_attacks(&self, board_set: &BoardSet) -> BitBoardSet {
         let position = self.position.remove_level();
-        let occupied = Self::compute_ray_occupied(board);
+        let occupied = Self::compute_ray_occupied(board_set);
 
         let mut attacks = BitBoardSet::new();
         let mut destination = BitBoard::EMPTY;
@@ -280,7 +280,7 @@ impl Piece {
         destination |= position.ray(occupied, |current| current.up_left());
         destination |= position.ray(occupied, |current| current.up_right());
 
-        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
+        let empty_boards = board_set.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -291,7 +291,7 @@ impl Piece {
         attacks
     }
 
-    pub fn compute_king_attacks(&self, board: &Board) -> BitBoardSet {
+    pub fn compute_king_attacks(&self, board_set: &BoardSet) -> BitBoardSet {
         let position = self.position.remove_level();
 
         let mut attacks = BitBoardSet::new();
@@ -306,7 +306,7 @@ impl Piece {
         destination |= position.up_left();
         destination |= position.down_right();
 
-        let empty_boards = board.get_empty_squares(destination, Some(!self.color));
+        let empty_boards = board_set.get_empty_squares(destination, Some(!self.color));
 
         for (board_type, square, is_empty) in &empty_boards {
             if *is_empty {
@@ -319,15 +319,15 @@ impl Piece {
             match self.color {
                 Color::White => {
                     // 킹 사이드 캐슬링
-                    if let Some(right_piece) = board.get_piece(BitBoard::E0 | BitBoard::KL1) {
+                    if let Some(right_piece) = board_set.get_piece(BitBoard::E0 | BitBoard::KL1) {
                         if !right_piece.is_moved {
                             attacks[BoardType::WhiteKing] |= BitBoard::E0;
                         }
                     }
 
                     // 퀸 사이드 캐슬링
-                    if let Some(left_piece) = board.get_piece(BitBoard::Z0 | BitBoard::QL1) {
-                        let is_between_empty = !board.occupied_piece.union()[BoardType::WhiteQueen]
+                    if let Some(left_piece) = board_set.get_piece(BitBoard::Z0 | BitBoard::QL1) {
+                        let is_between_empty = !board_set.occupied_piece.union()[BoardType::WhiteQueen]
                             .contains(BitBoard::D0);
 
                         if !left_piece.is_moved && is_between_empty {
@@ -337,15 +337,15 @@ impl Piece {
                 }
                 Color::Black => {
                     // 킹 사이드 캐슬링
-                    if let Some(right_piece) = board.get_piece(BitBoard::E9 | BitBoard::KL6) {
+                    if let Some(right_piece) = board_set.get_piece(BitBoard::E9 | BitBoard::KL6) {
                         if !right_piece.is_moved {
                             attacks[BoardType::BlackKing] |= BitBoard::E9;
                         }
                     }
 
                     // 퀸 사이드 캐슬링
-                    if let Some(left_piece) = board.get_piece(BitBoard::Z9 | BitBoard::QL6) {
-                        let is_between_empty = !board.occupied_piece.union()[BoardType::BlackQueen]
+                    if let Some(left_piece) = board_set.get_piece(BitBoard::Z9 | BitBoard::QL6) {
+                        let is_between_empty = !board_set.occupied_piece.union()[BoardType::BlackQueen]
                             .contains(BitBoard::D9);
 
                         if !left_piece.is_moved && is_between_empty {

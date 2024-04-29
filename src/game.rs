@@ -1,183 +1,184 @@
+use crate::board::Board;
 use crate::board_type::BoardType;
 use crate::square::{File, Level};
 use crate::{
     bit_board::BitBoard,
-    board::{Board, BoardSnapshot},
+    board_set::{BoardSet, BoardSetSnapshot},
     chess_move::ChessMove,
     piece::PieceType,
     square::{Color, Rank, Square},
 };
 
 pub struct Game {
-    pub board: Board,
-    pub move_stack: Vec<(Box<dyn ChessMove + Send + 'static>, BoardSnapshot)>,
+    pub board_set: BoardSet,
+    pub move_stack: Vec<(Box<dyn ChessMove + Send + 'static>, BoardSetSnapshot)>,
 }
 
 impl Game {
     pub fn new() -> Self {
         let mut game = Self {
-            board: Board::new(),
+            board_set: BoardSet::new(),
             move_stack: Vec::new(),
         };
 
-        game.board
+        game.board_set
             .set_piece(BitBoard::Z0 | BitBoard::QL1, PieceType::Rook, Color::White);
-        game.board
+        game.board_set
             .set_piece(BitBoard::A0 | BitBoard::QL1, PieceType::Queen, Color::White);
-        game.board
+        game.board_set
             .set_piece(BitBoard::Z1 | BitBoard::QL1, PieceType::Pawn, Color::White);
-        game.board
+        game.board_set
             .set_piece(BitBoard::A1 | BitBoard::QL1, PieceType::Pawn, Color::White);
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::A1 | BitBoard::WHITE,
             PieceType::Knight,
             Color::White,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::B1 | BitBoard::WHITE,
             PieceType::Bishop,
             Color::White,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::C1 | BitBoard::WHITE,
             PieceType::Bishop,
             Color::White,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::D1 | BitBoard::WHITE,
             PieceType::Knight,
             Color::White,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::A2 | BitBoard::WHITE,
             PieceType::Pawn,
             Color::White,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::B2 | BitBoard::WHITE,
             PieceType::Pawn,
             Color::White,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::C2 | BitBoard::WHITE,
             PieceType::Pawn,
             Color::White,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::D2 | BitBoard::WHITE,
             PieceType::Pawn,
             Color::White,
         );
-        game.board
+        game.board_set
             .set_piece(BitBoard::D0 | BitBoard::KL1, PieceType::King, Color::White);
-        game.board
+        game.board_set
             .set_piece(BitBoard::E0 | BitBoard::KL1, PieceType::Rook, Color::White);
-        game.board
+        game.board_set
             .set_piece(BitBoard::D1 | BitBoard::KL1, PieceType::Pawn, Color::White);
-        game.board
+        game.board_set
             .set_piece(BitBoard::E1 | BitBoard::KL1, PieceType::Pawn, Color::White);
 
-        game.board
+        game.board_set
             .set_piece(BitBoard::Z8 | BitBoard::QL6, PieceType::Pawn, Color::Black);
-        game.board
+        game.board_set
             .set_piece(BitBoard::A8 | BitBoard::QL6, PieceType::Pawn, Color::Black);
-        game.board
+        game.board_set
             .set_piece(BitBoard::Z9 | BitBoard::QL6, PieceType::Rook, Color::Black);
-        game.board
+        game.board_set
             .set_piece(BitBoard::A9 | BitBoard::QL6, PieceType::Queen, Color::Black);
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::A7 | BitBoard::BLACK,
             PieceType::Pawn,
             Color::Black,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::B7 | BitBoard::BLACK,
             PieceType::Pawn,
             Color::Black,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::C7 | BitBoard::BLACK,
             PieceType::Pawn,
             Color::Black,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::D7 | BitBoard::BLACK,
             PieceType::Pawn,
             Color::Black,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::A8 | BitBoard::BLACK,
             PieceType::Knight,
             Color::Black,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::B8 | BitBoard::BLACK,
             PieceType::Bishop,
             Color::Black,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::C8 | BitBoard::BLACK,
             PieceType::Bishop,
             Color::Black,
         );
-        game.board.set_piece(
+        game.board_set.set_piece(
             BitBoard::D8 | BitBoard::BLACK,
             PieceType::Knight,
             Color::Black,
         );
-        game.board
+        game.board_set
             .set_piece(BitBoard::D8 | BitBoard::KL6, PieceType::Pawn, Color::Black);
-        game.board
+        game.board_set
             .set_piece(BitBoard::E8 | BitBoard::KL6, PieceType::Pawn, Color::Black);
-        game.board
+        game.board_set
             .set_piece(BitBoard::D9 | BitBoard::KL6, PieceType::King, Color::Black);
-        game.board
+        game.board_set
             .set_piece(BitBoard::E9 | BitBoard::KL6, PieceType::Rook, Color::Black);
 
-        game.board.update();
+        game.board_set.update();
 
         game
     }
 
     fn pass_turn(&mut self) {
-        let _ = self.board.turn != self.board.turn;
+        let _ = self.board_set.turn != self.board_set.turn;
     }
 
     pub fn get_attack_squares(&self, square: &Square) -> Vec<Square> {
-        let piece = match self.board.get_piece(BitBoard::from_square(square)) {
+        let piece = match self.board_set.get_piece(BitBoard::from_square(square)) {
             Some(piece) => piece,
             None => return Vec::new(),
         };
 
-        piece.get_attack_squares(&self.board)
+        piece.get_attack_squares(&self.board_set)
     }
 
     pub fn legal_move(&self, chess_move: &impl ChessMove) -> bool {
-        chess_move.legal(&self.board)
+        chess_move.legal(&self.board_set)
     }
 
     pub fn push_move(&mut self, chess_move: impl ChessMove + Send + 'static) -> bool {
-        let snapshot = BoardSnapshot::new(&self.board);
+        let snapshot = BoardSetSnapshot::new(&self.board_set);
 
-        if self.board.turn == Color::Black {
-            self.board.full_move_number += 1;
+        if self.board_set.turn == Color::Black {
+            self.board_set.full_move_number += 1;
         }
 
-        self.board.half_move_clock += 1;
+        self.board_set.half_move_clock += 1;
 
         if let Some(piece_move) = chess_move.as_piece_move() {
             let piece = self
-                .board
+                .board_set
                 .get_piece(BitBoard::from_square(&piece_move.source))
                 .unwrap();
 
-            if piece.piece_type == PieceType::Pawn || piece_move.is_capture(&self.board) {
-                self.board.half_move_clock = 0;
+            if piece.piece_type == PieceType::Pawn || piece_move.is_capture(&self.board_set) {
+                self.board_set.half_move_clock = 0;
             }
         }
 
-        let result = chess_move.run(&mut self.board);
-        self.board.update();
+        let result = chess_move.run(&mut self.board_set);
+        self.board_set.update();
 
         self.move_stack.push((Box::new(chess_move), snapshot));
         self.pass_turn();
@@ -192,7 +193,7 @@ impl Game {
         self.pass_turn();
         match self.move_stack.pop() {
             Some((_chess_move, snapshot)) => {
-                snapshot.restore(&mut self.board);
+                snapshot.restore(&mut self.board_set);
                 true
             }
             None => false,
@@ -202,7 +203,7 @@ impl Game {
     pub fn print(&self) {
         println!("White Board: ");
         for bit_square in BitBoard::WHITE_SET.iter() {
-            match self.board.get_piece(bit_square | BitBoard::WHITE) {
+            match self.board_set.get_piece(bit_square | BitBoard::WHITE) {
                 Some(piece) => print!("{} ", piece.get_char()),
                 None => print!(". "),
             }
@@ -214,7 +215,7 @@ impl Game {
 
         println!("Neutral Board: ");
         for bit_square in BitBoard::NEUTRAL_SET.iter() {
-            match self.board.get_piece(bit_square | BitBoard::NEUTRAL) {
+            match self.board_set.get_piece(bit_square | BitBoard::NEUTRAL) {
                 Some(piece) => print!("{} ", piece.get_char()),
                 None => print!(". "),
             }
@@ -226,7 +227,7 @@ impl Game {
 
         println!("Black Board: ");
         for bit_square in BitBoard::BLACK_SET.iter() {
-            match self.board.get_piece(bit_square | BitBoard::BLACK) {
+            match self.board_set.get_piece(bit_square | BitBoard::BLACK) {
                 Some(piece) => print!("{} ", piece.get_char()),
                 None => print!(". "),
             }
@@ -241,7 +242,7 @@ impl Game {
 impl Game {
     pub fn new_sandbox(fen: String) -> Self {
         let mut sandbox = Self {
-            board: Board::new(),
+            board_set: BoardSet::new(),
             move_stack: Vec::new(),
         };
 
@@ -284,7 +285,7 @@ impl Game {
             for &init_char in init_part.iter() {
                 match PIECE_CHAR_VEC.contains(&init_char) {
                     true => {
-                        sandbox.board.set_piece(
+                        sandbox.board_set.set_piece(
                             current_bitboard | bitboard_level,
                             Self::check_piece(init_char),
                             Self::check_color(init_char),
@@ -336,7 +337,7 @@ impl Game {
                 part_count = 0;
             }
 
-            sandbox.board.board_set[3] = (BoardType::WhiteQueen, Level::QL1);
+            sandbox.board_set.boards[3] = Board::new(BoardType::WhiteQueen, Level::QL1);
 
             let mut level_count: usize = 0;
             let mut current_bitboard: BitBoard;
@@ -349,51 +350,51 @@ impl Game {
                     let board_index = 2 + level_count;
                     bitboard_level = match init_sub_board[level_count - 1] {
                         "q1" | "Q1" => {
-                            sandbox.board.board_set[board_index].1 = Level::QL1;
+                            sandbox.board_set.boards[board_index].level = Level::QL1;
                             BitBoard::QL1
                         }
                         "q2" | "Q2" => {
-                            sandbox.board.board_set[board_index].1 = Level::QL2;
+                            sandbox.board_set.boards[board_index].level = Level::QL2;
                             BitBoard::QL2
                         }
                         "q3" | "Q3" => {
-                            sandbox.board.board_set[board_index].1 = Level::QL3;
+                            sandbox.board_set.boards[board_index].level = Level::QL3;
                             BitBoard::QL3
                         }
                         "q4" | "Q4" => {
-                            sandbox.board.board_set[board_index].1 = Level::QL4;
+                            sandbox.board_set.boards[board_index].level = Level::QL4;
                             BitBoard::QL4
                         }
                         "q5" | "Q5" => {
-                            sandbox.board.board_set[board_index].1 = Level::QL5;
+                            sandbox.board_set.boards[board_index].level = Level::QL5;
                             BitBoard::QL5
                         }
                         "q6" | "Q6" => {
-                            sandbox.board.board_set[board_index].1 = Level::QL6;
+                            sandbox.board_set.boards[board_index].level = Level::QL6;
                             BitBoard::QL6
                         }
                         "k1" | "K1" => {
-                            sandbox.board.board_set[board_index].1 = Level::KL1;
+                            sandbox.board_set.boards[board_index].level = Level::KL1;
                             BitBoard::KL1
                         }
                         "k2" | "K2" => {
-                            sandbox.board.board_set[board_index].1 = Level::KL2;
+                            sandbox.board_set.boards[board_index].level = Level::KL2;
                             BitBoard::KL2
                         }
                         "k3" | "K3" => {
-                            sandbox.board.board_set[board_index].1 = Level::KL3;
+                            sandbox.board_set.boards[board_index].level = Level::KL3;
                             BitBoard::KL3
                         }
                         "k4" | "K4" => {
-                            sandbox.board.board_set[board_index].1 = Level::KL4;
+                            sandbox.board_set.boards[board_index].level = Level::KL4;
                             BitBoard::KL4
                         }
                         "k5" | "K5" => {
-                            sandbox.board.board_set[board_index].1 = Level::KL5;
+                            sandbox.board_set.boards[board_index].level = Level::KL5;
                             BitBoard::KL5
                         }
                         "k6" | "K6" => {
-                            sandbox.board.board_set[board_index].1 = Level::KL6;
+                            sandbox.board_set.boards[board_index].level = Level::KL6;
                             BitBoard::KL6
                         }
                         _ => BitBoard::empty(),
@@ -451,7 +452,7 @@ impl Game {
                 for (square_count, &init_char) in init_part.iter().enumerate() {
                     match PIECE_CHAR_VEC.contains(&init_char) {
                         true => {
-                            sandbox.board.set_piece(
+                            sandbox.board_set.set_piece(
                                 current_bitboard | bitboard_level,
                                 Self::check_piece(init_char),
                                 Self::check_color(init_char),
@@ -467,7 +468,7 @@ impl Game {
             }
         }
 
-        sandbox.board.update();
+        sandbox.board_set.update();
 
         sandbox
     }
@@ -630,7 +631,7 @@ impl Game {
 
     fn print_by_rank(&self, rank_vec: Vec<BitBoard>, bit_board_level: BitBoard) {
         for &bit_square in rank_vec.iter() {
-            match self.board.get_piece(bit_square | bit_board_level) {
+            match self.board_set.get_piece(bit_square | bit_board_level) {
                 Some(piece) => print!("{} ", piece.get_char()),
                 None => print!(". "),
             }
@@ -639,10 +640,10 @@ impl Game {
 
     fn sub_print_by_rank(&self, rank_vec: Vec<BitBoard>, bit_board_level: BitBoard) {
         if !self
-            .board
             .board_set
-            .map(|(_, level)| level)
-            .contains(&bit_board_level.get_level())
+            .boards
+            .iter()
+            .any(|board| board.level == bit_board_level.get_level())
         {
             for &bit_square in rank_vec.iter() {
                 print!("  ");
@@ -655,7 +656,7 @@ impl Game {
         }
 
         for &bit_square in rank_vec.iter() {
-            match self.board.get_piece(bit_square | bit_board_level) {
+            match self.board_set.get_piece(bit_square | bit_board_level) {
                 Some(piece) => print!("{} ", piece.get_char()),
                 None => print!(". "),
             }

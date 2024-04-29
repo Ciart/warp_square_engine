@@ -142,59 +142,59 @@ impl Game {
     }
 
     fn get_turn(&self) -> Color {
-        self.0.board.turn
+        self.0.board_set.turn
     }
 
     fn get_full_move_number(&self) -> u32 {
-        self.0.board.full_move_number
+        self.0.board_set.full_move_number
     }
 
     fn get_half_move_clock(&self) -> u32 {
-        self.0.board.half_move_clock
+        self.0.board_set.half_move_clock
     }
 
     fn get_piece(&self, square: &PySquare) -> Option<Piece> {
-        self.0.board.get_piece(BitBoard::from_square(&square.0)).map(|piece| Piece(piece.clone()))
+        self.0.board_set.get_piece(BitBoard::from_square(&square.0)).map(|piece| Piece(piece.clone()))
     }
 
     fn get_pieces(&self) -> Vec<Piece> {
-        self.0.board.pieces.iter().map(|piece| Piece(piece.clone())).collect()
+        self.0.board_set.pieces.iter().map(|piece| Piece(piece.clone())).collect()
     }
 
     fn get_captured_pieces(&self) -> Vec<Piece> {
-        self.0.board.captured_pieces.iter().map(|piece| Piece(piece.clone())).collect()
+        self.0.board_set.captured_pieces.iter().map(|piece| Piece(piece.clone())).collect()
     }
 
     fn is_check(&self) -> bool {
-        self.0.board.is_check()
+        self.0.board_set.is_check()
     }
 
     fn is_checkmate(&self) -> bool {
-        self.0.board.is_checkmate()
+        self.0.board_set.is_checkmate()
     }
 
     fn is_promotion(&self, piece_move: &PyPieceMove) -> bool {
-        piece_move.0.is_promotion(&self.0.board)
+        piece_move.0.is_promotion(&self.0.board_set)
     }
 
     fn is_en_passant(&self, piece_move: &PyPieceMove) -> bool {
-        piece_move.0.is_en_passant(&self.0.board)
+        piece_move.0.is_en_passant(&self.0.board_set)
     }
 
     fn is_king_side_castling(&self, piece_move: &PyPieceMove) -> bool {
-        piece_move.0.is_king_side_castling(&self.0.board)
+        piece_move.0.is_king_side_castling(&self.0.board_set)
     }
 
     fn is_queen_side_castling(&self, piece_move: &PyPieceMove) -> bool {
-        piece_move.0.is_queen_side_castling(&self.0.board)
+        piece_move.0.is_queen_side_castling(&self.0.board_set)
     }
 
     fn is_castling(&self, piece_move: &PyPieceMove) -> bool {
-        piece_move.0.is_castling(&self.0.board)
+        piece_move.0.is_castling(&self.0.board_set)
     }
 
     fn is_capture(&self, piece_move: &PyPieceMove) -> bool {
-        piece_move.0.is_capture(&self.0.board)
+        piece_move.0.is_capture(&self.0.board_set)
     }
 }
 
