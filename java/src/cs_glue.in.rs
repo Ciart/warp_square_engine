@@ -1,10 +1,24 @@
 use ::warp_square_engine::{
     bit_board::BitBoard,
+    board::Board,
+    board_type::BoardType,
     chess_move::{BoardMove, PieceMove},
     game::Game,
     piece::{Piece, PieceType},
     square::{Color, File, Level, Rank, Square},
 };
+
+foreign_enum!(
+    enum BoardType {
+        White = BoardType::White,
+        Neutral = BoardType::Neutral,
+        Black = BoardType::Black,
+        WhiteQueen = BoardType::WhiteQueen,
+        WhiteKing = BoardType::WhiteKing,
+        BlackQueen = BoardType::BlackQueen,
+        BlackKing = BoardType::BlackKing,
+    }
+);
 
 foreign_enum!(
     enum PieceType {
@@ -156,6 +170,19 @@ foreign_class!(
     }
 );
 
+foreign_class!(
+    class Board {
+        self_type Board;
+        constructor Board::new(board_type: BoardType, level: Level) -> Board;
+        fn Square::getBoardType(&self) -> BoardType {
+            this.board_type
+        }
+        fn Square::getLevel(&self) -> Level {
+            this.level
+        }
+    }
+);
+
 foreign_class!(class Game {
     self_type Game;
     constructor Game::new() -> Game;
@@ -177,45 +204,54 @@ foreign_class!(class Game {
     }
     fn Game::print(&self);
     fn Game::getTurn(&self) -> Color {
-        this.board.turn
+        this.board_set.turn
     }
     fn Game::getFullMoveNumber(&self) -> u32 {
-        this.board.full_move_number
+        this.board_set.full_move_number
     }
     fn Game::getHalfMoveClock(&self) -> u32 {
-        this.board.half_move_clock
+        this.board_set.half_move_clock
+    }
+    fn Game::getPiece(&self, square: Square) -> Option<Piece> {
+        this.board_set.get_piece(BitBoard::from_square(&square)).clone()
     }
     fn Game::getPieces(&self) -> Vec<Piece> {
-        this.board.pieces.clone()
+        this.board_set.pieces.clone()
+    }
+    fn Game::getPiecesWithBoardType(&self, boardType: BoardType) -> Vec<Piece> {
+        this.board_set.get_pieces_with_board_type(boardType).clone()
     }
     fn Game::getCapturedPieces(&self) -> Vec<Piece> {
-        this.board.captured_pieces.clone()
+        this.board_set.captured_pieces.clone()
+    }
+    fn Game::getBoards(&self) -> Vec<Board> {
+        this.board_set.boards.clone()
     }
     fn Game::isCheck(&self) -> bool {
-        this.board.is_check()
+        this.board_set.is_check()
     }
     fn Game::isCheckmate(&self) -> bool {
-        this.board.is_checkmate()
+        this.board_set.is_checkmate()
     }
     fn Game::isStalemate(&self) -> bool {
-        this.board.is_stalemate()
+        this.board_set.is_stalemate()
     }
     fn Game::isPromotion(&self, pieceMove: &PieceMove) -> bool {
-        pieceMove.is_promotion(&this.board)
+        pieceMove.is_promotion(&this.board_set)
     }
     fn Game::isEnPassant(&self, pieceMove: &PieceMove) -> bool {
-        pieceMove.is_en_passant(&this.board)
+        pieceMove.is_en_passant(&this.board_set)
     }
     fn Game::isKingSideCastling(&self, pieceMove: &PieceMove) -> bool {
-        pieceMove.is_king_side_castling(&this.board)
+        pieceMove.is_king_side_castling(&this.board_set)
     }
     fn Game::isQueenSideCastling(&self, pieceMove: &PieceMove) -> bool {
-        pieceMove.is_queen_side_castling(&this.board)
+        pieceMove.is_queen_side_castling(&this.board_set)
     }
     fn Game::isCastling(&self, pieceMove: &PieceMove) -> bool {
-        pieceMove.is_castling(&this.board)
+        pieceMove.is_castling(&this.board_set)
     }
     fn Game::isCapture(&self, pieceMove: &PieceMove) -> bool {
-        pieceMove.is_capture(&this.board)
+        pieceMove.is_capture(&this.board_set)
     }
 });
