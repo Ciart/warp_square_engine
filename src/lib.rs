@@ -1,9 +1,11 @@
 pub mod bit_board;
 pub mod bit_board_set;
 pub mod board;
+pub mod board_set;
 pub mod board_type;
 pub mod chess_move;
 pub mod color_mask;
 pub mod game;
 pub mod piece;
 pub mod square;
+mod unit_test;

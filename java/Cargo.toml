@@ -1,18 +1,18 @@
 [package]
-name = "java"
+name = "warp_square_engine_package"
 version.workspace = true
 edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "engine_java"
+name = "warp_square_engine"
 crate-type = ["cdylib"]
 
 [dependencies]
-warp_square_engine = {path = "../"}
+warp_square_engine = { path = "../" }
 log = "0.4.20"
 
 [build-dependencies]
-flapigen = "0.6.0-pre7"
-bindgen = { version = "0.68.1", default-features = false}
+flapigen = { git = "https://github.com/Simteract/flapigen-rs.git", branch = "master" }
+bindgen = { version = "0.68.1", default-features = false }
