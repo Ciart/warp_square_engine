@@ -152,10 +152,12 @@ impl BoardSet {
         self.pieces.iter().find(|piece| piece.position == square)
     }
 
-    pub fn get_pieces_with_board_type(&self, board_type: BoardType) -> Vec<&Piece> {
+    // Bridge 전용 함수
+    pub fn get_pieces_with_board_type(&self, board_type: BoardType) -> Vec<Piece> {
         self.pieces
             .iter()
             .filter(|piece| self.get_board_type(piece.position.get_level()) == Some(board_type))
+            .map(|piece| piece.clone())
             .collect()
     }
 

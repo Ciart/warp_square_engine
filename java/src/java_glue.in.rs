@@ -252,14 +252,17 @@ foreign_class!(class Game {
     fn Game::getHalfMoveClock(&self) -> u32 {
         this.board_set.half_move_clock
     }
-    fn Game::getPiece(&self, square: Square) -> Option<Piece> {
-        this.board_set.get_piece(BitBoard::from_square(&square)).clone()
+    fn Game::getPiece(&self, square: &Square) -> Option<Piece> {
+        match this.board_set.get_piece(BitBoard::from_square(&square)) {
+            Some(piece) => Some(piece.clone()),
+            None => None,
+        }
     }
     fn Game::getPieces(&self) -> Vec<Piece> {
         this.board_set.pieces.clone()
     }
     fn Game::getPiecesWithBoardType(&self, boardType: BoardType) -> Vec<Piece> {
-        this.board_set.get_pieces_with_board_type(boardType).clone()
+        this.board_set.get_pieces_with_board_type(boardType)
     }
     fn Game::getCapturedPieces(&self) -> Vec<Piece> {
         this.board_set.captured_pieces.clone()
