@@ -16,3 +16,7 @@ log = "0.4.20"
 [build-dependencies]
 flapigen = { git = "https://github.com/Simteract/flapigen-rs.git", branch = "master" }
 bindgen = { version = "0.68.1", default-features = false }
+
+[features]
+java = []
+dotnet = []

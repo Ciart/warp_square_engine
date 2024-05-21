@@ -211,16 +211,16 @@ foreign_class!(
         fn Square::getLevel(&self) -> Level {
             this.level
         }
-    }
-    foreign_code r#"
-    static {
-        try {
-            NativeUtils.loadLibraryFromJar();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+        foreign_code r#"
+        static {
+            try {
+                NativeUtils.loadLibraryFromJar();
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
         }
+    "#;
     }
-"#;
 );
 
 foreign_class!(class Game {
@@ -268,7 +268,7 @@ foreign_class!(class Game {
         this.board_set.captured_pieces.clone()
     }
     fn Game::getBoards(&self) -> Vec<Board> {
-        this.board_set.boards.clone()
+        this.board_set.boards.clone().to_vec()
     }
     fn Game::isCheck(&self) -> bool {
         this.board_set.is_check()
