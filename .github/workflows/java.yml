@@ -8,11 +8,11 @@ jobs:
         os: [windows-latest, ubuntu-latest]
         include:
           - os: windows-latest
-            lib: engine_java.dll
+            lib: warp_square_engine.dll
           # - os: macos-latest
           #   lib: libengine_java.dylib
           - os: ubuntu-latest
-            lib: libengine_java.so
+            lib: libwarp_square_engine.so
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
