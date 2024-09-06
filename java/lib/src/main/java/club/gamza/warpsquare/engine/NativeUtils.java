@@ -78,11 +78,11 @@ public class NativeUtils {
         String path = new String();
 
         if (isWindows()) {
-            path = new String("/engine_java.dll");
+            path = new String("/warp_square_engine.dll");
         } else if (isMac()) {
-            path = new String("/libengine_java.dylib");
+            path = new String("/libwarp_square_engine.dylib");
         } else if (isUnix()) {
-            path = new String("/libengine_java.so");
+            path = new String("/libwarp_square_engine.so");
         } else {
             throw new RuntimeException("Unsupported OS");
         }
