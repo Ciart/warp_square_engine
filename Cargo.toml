@@ -6,7 +6,7 @@ edition = "2021"
 [workspace]
 members = [
     "python",
-    "java",
+    "binding",
 ]
 
 [workspace.package]
