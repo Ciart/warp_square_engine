@@ -5,12 +5,12 @@ jobs:
     name: Build ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest]
         include:
           - os: windows-latest
             lib: warp_square_engine.dll
-          - os: macos-latest
-            lib: libwarp_square_engine.dylib
+          # - os: macos-latest
+          #   lib: libwarp_square_engine.dylib
           - os: ubuntu-latest
             lib: libwarp_square_engine.so
     runs-on: ${{ matrix.os }}
@@ -28,7 +28,7 @@ jobs:
         with:
           toolchain: stable
       - name: Cargo Build
-        working-directory: ./java
+        working-directory: ./binding
         run: cargo build --release --features=java
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
@@ -48,19 +48,19 @@ jobs:
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
-          path: ./java/lib/src/main/resources
+          path: ./binding/lib/src/main/resources
           merge-multiple: true
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
       - name: Cargo Build
-        working-directory: ./java
+        working-directory: ./binding
         run: cargo build --release --features=java
       - name: Gradlew Build
-        working-directory: ./java
+        working-directory: ./binding
         run: ./gradlew build
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: java
-          path: ./java/lib/build/libs
+          path: ./binding/lib/build/libs
