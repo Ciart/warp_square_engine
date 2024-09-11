@@ -233,13 +233,13 @@ foreign_class!(class Game {
     fn Game::legalBoardMove(&self, boardMove: &BoardMove) -> bool {
         this.legal_move(boardMove)
     }
-    fn Game::pushPieceMove(&mut self, pieceMove: PieceMove) -> bool {
-        this.push_move(pieceMove)
+    fn Game::pushPieceMove(&mut self, pieceMove: &PieceMove) -> bool {
+        this.push_move(pieceMove.clone())
     }
-    fn Game::pushBoardMove(&mut self, boardMove: BoardMove) -> bool {
-        this.push_move(boardMove)
+    fn Game::pushBoardMove(&mut self, boardMove: &BoardMove) -> bool {
+        this.push_move(boardMove.clone())
     }
-    fn Game::popMove(&mut self, boardMove: BoardMove) -> bool {
+    fn Game::popMove(&mut self) -> bool {
         this.pop_move()
     }
     fn Game::print(&self);
@@ -279,22 +279,22 @@ foreign_class!(class Game {
     fn Game::isStalemate(&self) -> bool {
         this.board_set.is_stalemate()
     }
-    fn Game::isPromotion(&self, pieceMove: PieceMove) -> bool {
+    fn Game::isPromotion(&self, pieceMove: &PieceMove) -> bool {
         pieceMove.is_promotion(&this.board_set)
     }
-    fn Game::isEnPassant(&self, pieceMove: PieceMove) -> bool {
+    fn Game::isEnPassant(&self, pieceMove: &PieceMove) -> bool {
         pieceMove.is_en_passant(&this.board_set)
     }
-    fn Game::isKingSideCastling(&self, pieceMove: PieceMove) -> bool {
+    fn Game::isKingSideCastling(&self, pieceMove: &PieceMove) -> bool {
         pieceMove.is_king_side_castling(&this.board_set)
     }
-    fn Game::isQueenSideCastling(&self, pieceMove: PieceMove) -> bool {
+    fn Game::isQueenSideCastling(&self, pieceMove: &PieceMove) -> bool {
         pieceMove.is_queen_side_castling(&this.board_set)
     }
-    fn Game::isCastling(&self, pieceMove: PieceMove) -> bool {
+    fn Game::isCastling(&self, pieceMove: &PieceMove) -> bool {
         pieceMove.is_castling(&this.board_set)
     }
-    fn Game::isCapture(&self, pieceMove: PieceMove) -> bool {
+    fn Game::isCapture(&self, pieceMove: &PieceMove) -> bool {
         pieceMove.is_capture(&this.board_set)
     }
     foreign_code r#"

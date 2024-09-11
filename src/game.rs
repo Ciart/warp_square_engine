@@ -169,11 +169,12 @@ impl Game {
         if let Some(piece_move) = chess_move.as_piece_move() {
             let piece = self
                 .board_set
-                .get_piece(BitBoard::from_square(&piece_move.source))
-                .unwrap();
+                .get_piece(BitBoard::from_square(&piece_move.source));
 
-            if piece.piece_type == PieceType::Pawn || piece_move.is_capture(&self.board_set) {
-                self.board_set.half_move_clock = 0;
+            if let Some(piece) = piece {
+                if piece.piece_type == PieceType::Pawn || piece_move.is_capture(&self.board_set) {
+                    self.board_set.half_move_clock = 0;
+                }
             }
         }
 

@@ -5,12 +5,12 @@ jobs:
     name: Build ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
         include:
           - os: windows-latest
             lib: warp_square_engine.dll
-          # - os: macos-latest
-          #   lib: libengine_java.dylib
+          - os: macos-latest
+            lib: libwarp_square_engine.dylib
           - os: ubuntu-latest
             lib: libwarp_square_engine.so
     runs-on: ${{ matrix.os }}
@@ -50,6 +50,12 @@ jobs:
         with:
           path: ./java/lib/src/main/resources
           merge-multiple: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Cargo Build
+        working-directory: ./java
+        run: cargo build --release --features=java
       - name: Gradlew Build
         working-directory: ./java
         run: ./gradlew build
