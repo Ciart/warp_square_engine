@@ -50,6 +50,10 @@ jobs:
         with:
           path: ./binding/lib/src/main/resources
           merge-multiple: true
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: '11'
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
